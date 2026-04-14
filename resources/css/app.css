@@ -9,7 +9,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
     --color-zinc-50: #fafafa;
     --color-zinc-100: #f5f5f5;
@@ -26,6 +26,11 @@
     --color-accent: var(--color-neutral-800);
     --color-accent-content: var(--color-neutral-800);
     --color-accent-foreground: var(--color-white);
+
+    --color-brand-red: #C8102E;
+    --color-brand-red-dark: #a50d25;
+    --color-highway-green: #006A44;
+    --color-accent-yellow: #ffcc00;
 }
 
 @layer theme {
@@ -37,7 +42,6 @@
 }
 
 @layer base {
-
     *,
     ::after,
     ::before,
@@ -45,22 +49,286 @@
     ::file-selector-button {
         border-color: var(--color-gray-200, currentColor);
     }
+
+    :root {
+        --brand-red: #C8102E;
+        --brand-red-dark: #a50d25;
+        --brand-red-light: #e03a4f;
+        --highway-green: #006A44;
+        --highway-green-dark: #004d30;
+        --highway-green-light: #0a7f54;
+        --accent-yellow: #ffcc00;
+        --text-dark: #1F1F1F;
+        --text-light: #ffffff;
+        --text-muted: #6c757d;
+        --bg-light: #FFFFFF;
+        --bg-soft: #f8f9fa;
+        --border-light: #e5e5e5;
+    }
+
+    ::-moz-selection { background: var(--brand-red); color: #fff; }
+    ::selection      { background: var(--brand-red); color: #fff; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--bg-light);
+        color: var(--text-dark);
+        line-height: 1.6;
+    }
+
+    h1, h2, h3, h4 {
+        font-weight: 700;
+        letter-spacing: -0.02em;
+    }
 }
 
-[data-flux-field]:not(ui-radio, ui-checkbox) {
-    @apply grid gap-2;
+@layer base {
+    [data-flux-field]:not(ui-radio, ui-checkbox) {
+        @apply grid gap-2;
+    }
+
+    [data-flux-label] {
+        @apply mb-0! leading-tight!;
+    }
+
+    input:focus[data-flux-control],
+    textarea:focus[data-flux-control],
+    select:focus[data-flux-control] {
+        @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+    }
 }
 
-[data-flux-label] {
-    @apply  !mb-0 !leading-tight;
+/* ============================================================
+   DRIVE-AWAY COMPONENTS
+   ============================================================ */
+
+@layer components {
+
+    /* ----- Buttons ----- */
+    .btn-brand {
+        background-color: var(--brand-red);
+        color: #fff;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+    }
+    .btn-brand:hover {
+        background-color: var(--brand-red-dark);
+        transform: translateY(-1px);
+        color: #fff;
+    }
+
+    .btn-outline-brand {
+        border: 2px solid var(--brand-red);
+        color: var(--brand-red);
+        background: transparent;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+    }
+    .btn-outline-brand:hover {
+        background: var(--brand-red);
+        color: #fff;
+    }
+
+    .btn-outline-white {
+        border: 2px solid #fff;
+        color: #fff;
+        background: transparent;
+        padding: 0.75rem 1.5rem;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.2s ease;
+    }
+    .btn-outline-white:hover {
+        background: rgba(255, 255, 255, 0.15);
+        color: #fff;
+    }
+
+    /* ----- Hero ----- */
+    .hero-banner {
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* ----- Navbar ----- */
+    .site-navbar {
+        background: #fff;
+        border-bottom: 1px solid var(--border-light);
+        padding: 14px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+    .site-navbar__brand {
+        font-weight: 800;
+        font-size: 1.25rem;
+        color: var(--brand-red);
+        text-decoration: none;
+        letter-spacing: -0.02em;
+    }
+    .site-navbar__brand span {
+        color: var(--text-dark);
+    }
+    .site-navbar__links {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    .site-navbar__links a {
+        color: var(--text-dark);
+        text-decoration: none;
+        font-weight: 500;
+        font-size: 0.9375rem;
+        transition: color 0.2s ease;
+    }
+    .site-navbar__links a:hover {
+        color: var(--brand-red);
+    }
+
+    /* ----- Road Divider ----- */
+    .road-divider {
+        background: #222;
+        overflow: hidden;
+    }
+    .road-divider__top,
+    .road-divider__bottom {
+        height: 8px;
+        background: #1a1a1a;
+    }
+    .road-divider__stripe {
+        height: 18px;
+        background: #2d2d2d;
+        display: flex;
+        align-items: center;
+        padding: 0 16px;
+    }
+    .road-divider__stripe-inner {
+        flex: 1;
+        height: 4px;
+        background: repeating-linear-gradient(
+            to right,
+            var(--accent-yellow),
+            var(--accent-yellow) 28px,
+            transparent 28px,
+            transparent 52px
+        );
+    }
+
+    /* ----- Section helpers ----- */
+    .section-accent {
+        width: 60px;
+        height: 4px;
+        background: var(--brand-red);
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: var(--text-dark);
+    }
+
+    .text-brand-red { color: var(--brand-red) !important; }
+    .text-muted     { color: var(--text-muted); }
+
+    /* ----- Cards ----- */
+    .card {
+        border: 1px solid var(--border-light);
+        border-radius: 10px;
+        padding: 1.5rem;
+        background: #fff;
+        transition: all 0.2s ease;
+    }
+    .card:hover {
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+        transform: translateY(-3px);
+    }
+
+    .card-green {
+        background: linear-gradient(135deg, var(--highway-green), var(--highway-green-dark));
+        color: #fff;
+        border-radius: 10px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.2s ease;
+    }
+    .card-green:hover {
+        box-shadow: 0 8px 24px rgba(0, 106, 68, 0.3);
+        transform: translateY(-3px);
+    }
+    .card-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: var(--accent-yellow);
+        line-height: 1;
+        margin-bottom: 0.5rem;
+    }
+    .card-label {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.9);
+        font-weight: 500;
+    }
+
+    /* ----- Footer Bar ----- */
+    .footer-bar {
+        background: var(--text-dark);
+        color: rgba(255, 255, 255, 0.7);
+        padding: 1.25rem 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        font-size: 0.875rem;
+    }
+    .footer-bar p { margin: 0; }
+    .footer-bar a {
+        color: rgba(255, 255, 255, 0.6);
+        text-decoration: none;
+        transition: color 0.2s ease;
+    }
+    .footer-bar a:hover { color: var(--accent-yellow); }
+
+    /* ----- Highway Green sections ----- */
+    .bg-highway-green {
+        background: linear-gradient(135deg, var(--highway-green), var(--highway-green-dark));
+        position: relative;
+        color: #fff;
+    }
+
+    /* ----- Animations ----- */
+    .fade-in {
+        opacity: 0;
+        transform: translateY(15px);
+        transition: all 0.6s ease;
+    }
+    .fade-in.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
-input:focus[data-flux-control],
-textarea:focus[data-flux-control],
-select:focus[data-flux-control] {
-    @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
-}
+/* ============================================================
+   CUSTOM TAILWIND UTILITIES
+   ============================================================ */
 
-/* \[:where(&)\]:size-4 {
-    @apply size-4;
-} */
+@utility min-h-100 { min-height: 25rem; }
+@utility min-h-125 { min-height: 31.25rem; }
+@utility min-h-150 { min-height: 37.5rem; }

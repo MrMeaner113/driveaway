@@ -28,9 +28,17 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
+            ->brandName('Drive-Away.ca')
+            ->brandLogo(asset('images/logo.png'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('images/fav/favicon.svg'))
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#C8102E'),
+                'success' => Color::hex('#006A44'),
+                'warning' => Color::hex('#ffcc00'),
+                'gray'    => Color::Zinc,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

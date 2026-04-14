@@ -1,0 +1,27 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+/* ===== Drive-Away.ca Admin Theme ===== */
+
+:root {
+    --brand-red: #C8102E;
+    --highway-green: #006A44;
+    --accent-yellow: #ffcc00;
+}
+
+/* Sidebar brand strip */
+.fi-sidebar-header {
+    border-bottom: 3px solid var(--brand-red);
+}
+
+/* Active nav item left border accent */
+.fi-sidebar-item-active-indicator {
+    background-color: var(--brand-red) !important;
+}
+
+/* Dashboard / page header accent */
+.fi-header-heading {
+    letter-spacing: -0.02em;
+}
