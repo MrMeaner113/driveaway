@@ -12,12 +12,12 @@ use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
-use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -30,8 +30,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->login()
+            ->profile(\App\Filament\Pages\Auth\EditProfile::class, isSimple: false)
             ->brandName('Drive-Away.ca')
-            ->brandLogo(asset('images/logo.png'))
+            ->brandLogo(new \Illuminate\Support\HtmlString('<a href="/"><img src="' . asset('images/logo.png') . '" style="height: 2rem; width: auto;" alt="Drive-Away.ca"></a>'))
             ->brandLogoHeight('2rem')
             ->favicon(asset('images/fav/favicon.svg'))
             ->colors([
@@ -48,7 +49,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

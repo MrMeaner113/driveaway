@@ -20,6 +20,7 @@
 
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @livewireStyles
 </head>
 <body class="font-sans antialiased bg-white">
 
@@ -97,12 +98,15 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section id="QuoteRequest">
-        <div style="max-width:800px; margin:0 auto; text-align:center; padding:0 20px;">
-            <h2 class="section-title">Ready to Move Your Vehicle?</h2>
-            <p class="text-muted" style="margin-bottom:1.5rem;">Join thousands of satisfied customers who trust Drive-Away</p>
-            <a href="{{ route('register') }}" class="btn-brand" style="display:inline-block;">Get Your Free Quote</a>
+    <!-- Quote Request Form -->
+    <section id="QuoteRequest" style="background: var(--bg-soft);">
+        <div style="max-width:900px; margin:0 auto; padding:0 20px;">
+            <div class="section-accent"></div>
+            <h2 class="section-title">Get a Free Quote</h2>
+            <p class="text-muted" style="margin-bottom:2rem;">Tell us about your vehicle and route — we'll get back to you promptly.</p>
+            <div class="card" style="padding:2rem;">
+                @livewire('quote-request-form')
+            </div>
         </div>
     </section>
 
@@ -115,6 +119,8 @@
             <a href="#">Contact Us</a>
         </div>
     </div>
+
+    @livewireScripts
 
     <!-- Fade-in Animation -->
     <script>
