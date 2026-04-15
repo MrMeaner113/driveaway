@@ -203,8 +203,11 @@ class ViewQuoteRequest extends ViewRecord
 
                 if (in_array($status, ['in_progress', 'on_hold'])) {
                     $payload['reviewed_at'] = $this->record->reviewed_at ?? now();
+                    $payload['reviewed_by'] = $this->record->reviewed_by ?? auth()->id();
                 } elseif ($status === 'sent') {
-                    $payload['quoted_at'] = $this->record->quoted_at ?? now();
+                    $payload['reviewed_by'] = $this->record->reviewed_by ?? auth()->id();
+                    $payload['quoted_at']   = $this->record->quoted_at ?? now();
+                    $payload['quoted_by']   = $this->record->quoted_by ?? auth()->id();
                 } elseif ($status === 'expired') {
                     $payload['expired_at'] = $this->record->expired_at ?? now();
                 }
@@ -234,6 +237,11 @@ class ViewQuoteRequest extends ViewRecord
             ->modalDescription('This will create a Contact, Quote, and Work Order from this request. This action cannot be undone.')
             ->visible(fn () => $this->record && $this->record->status !== 'accepted')
             ->action(function () {
+                $this->record->update(array_filter([
+                    'reviewed_by' => $this->record->reviewed_by ?? auth()->id(),
+                    'quoted_by'   => $this->record->quoted_by ?? auth()->id(),
+                ]));
+
                 try {
                     app(QuotePromotionService::class)->promote($this->record);
                 } catch (\LogicException $e) {

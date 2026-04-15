@@ -3,12 +3,10 @@
 namespace App\Filament\Resources\FuelExpenses\Schemas;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class FuelExpenseForm
@@ -22,48 +20,67 @@ class FuelExpenseForm
                     ->schema([
                         Select::make('work_order_id')
                             ->relationship('workOrder', 'work_order_number')
+                            ->label('Work Order')
+                            ->required()
+                            ->searchable()
+                            ->preload(),
+
+                        Select::make('vehicle_id')
+                            ->relationship('vehicle', 'id')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => trim("{$record->year} {$record->make?->name} {$record->model?->name}"))
+                            ->label('Vehicle')
                             ->required()
                             ->searchable(),
+
                         Select::make('driver_id')
                             ->relationship('driver', 'id')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->user->name ?? "Driver #{$record->id}")
-                            ->required()
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->user?->name ?? "Driver #{$record->id}")
+                            ->label('Driver')
+                            ->nullable()
                             ->searchable(),
-                        Select::make('fuel_vendor_id')
-                            ->relationship('fuelVendor', 'name')
-                            ->label('Fuel Vendor')
+
+                        DatePicker::make('fuel_date')
+                            ->required(),
+
+                        TextInput::make('litres')
+                            ->numeric()
                             ->required()
-                            ->searchable(),
-                        Select::make('fuel_type_id')
-                            ->relationship('fuelType', 'name')
-                            ->label('Fuel Type')
+                            ->step(0.01)
+                            ->suffix('L'),
+
+                        TextInput::make('cost_per_litre')
+                            ->label('Cost per Litre')
+                            ->numeric()
+                            ->prefix('$')
+                            ->step(0.0001)
                             ->required()
-                            ->preload(),
-                        Select::make('fuel_unit_id')
-                            ->relationship('fuelUnit', 'name')
-                            ->label('Unit')
-                            ->required()
-                            ->preload(),
-                        TextInput::make('quantity')->numeric()->required(),
-                        TextInput::make('amount')->numeric()->required()->suffix('¢'),
-                        DatePicker::make('receipt_date')->required(),
-                        Select::make('receipt_type_id')
-                            ->relationship('receiptType', 'name')
-                            ->required()
-                            ->preload(),
-                        Select::make('payment_method_id')
-                            ->relationship('paymentMethod', 'name')
-                            ->required()
-                            ->preload(),
-                        Toggle::make('is_reimbursable')->default(true),
-                        Textarea::make('notes')->columnSpanFull(),
-                        // cra_t2125_id defaults to 18 — hidden from driver-facing forms, visible here for office staff
-                        Select::make('cra_t2125_id')
-                            ->relationship('craLine', 'name')
-                            ->label('CRA T2125 Line')
-                            ->required()
-                            ->default(18)
-                            ->preload(),
+                            ->afterStateHydrated(fn ($component, $state) =>
+                                $component->state($state !== null ? number_format($state / 100, 4, '.', '') : null)
+                            )
+                            ->dehydrateStateUsing(fn ($state) => $state !== null ? (int) round((float) $state * 100) : null),
+
+                        TextInput::make('total_cost')
+                            ->label('Total Cost (auto-calculated)')
+                            ->prefix('$')
+                            ->disabled()
+                            ->dehydrated(false)
+                            ->afterStateHydrated(fn ($component, $state) =>
+                                $component->state($state !== null ? number_format($state / 100, 2, '.', '') : null)
+                            ),
+
+                        TextInput::make('odometer_reading')
+                            ->label('Odometer (km)')
+                            ->numeric()
+                            ->nullable(),
+
+                        TextInput::make('station_name')
+                            ->label('Station Name')
+                            ->nullable()
+                            ->columnSpanFull(),
+
+                        Textarea::make('notes')
+                            ->nullable()
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

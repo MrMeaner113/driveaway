@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
@@ -124,5 +125,21 @@ class WorkOrder extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    // ── Accessors ────────────────────────────────────────────────────────────
+
+    protected function totalExpensesAmount(): Attribute
+    {
+        return Attribute::get(function () {
+            $expenses  = $this->expenses()->sum('amount');
+            $fuel      = $this->fuelExpenses()->sum('total_cost');
+            return $expenses + $fuel;
+        });
+    }
+
+    protected function totalExpensesFormatted(): Attribute
+    {
+        return Attribute::get(fn () => '$' . number_format($this->total_expenses_amount / 100, 2));
     }
 }

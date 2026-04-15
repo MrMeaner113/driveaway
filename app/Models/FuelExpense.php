@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -13,27 +15,40 @@ class FuelExpense extends Model
     protected $fillable = [
         'work_order_id',
         'driver_id',
-        'fuel_vendor_id',
-        'fuel_type_id',
-        'fuel_unit_id',
-        'quantity',
-        'amount',
-        'receipt_date',
-        'receipt_type_id',
-        'payment_method_id',
-        'cra_t2125_id',
-        'is_reimbursable',
+        'vehicle_id',
+        'litres',
+        'cost_per_litre',
+        'total_cost',
+        'odometer_reading',
+        'fuel_date',
+        'station_name',
         'notes',
+        'recorded_by',
     ];
 
     protected function casts(): array
     {
         return [
-            'receipt_date'    => 'date',
-            'quantity'        => 'decimal:3',
-            'is_reimbursable' => 'boolean',
+            'litres'    => 'decimal:2',
+            'fuel_date' => 'date',
         ];
     }
+
+    protected static function booted(): void
+    {
+        static::creating(function (FuelExpense $fuel) {
+            if (auth()->check()) {
+                $fuel->recorded_by = auth()->id();
+            }
+            $fuel->total_cost = (int) round((float) $fuel->litres * $fuel->cost_per_litre);
+        });
+
+        static::updating(function (FuelExpense $fuel) {
+            $fuel->total_cost = (int) round((float) $fuel->litres * $fuel->cost_per_litre);
+        });
+    }
+
+    // ── Relationships ────────────────────────────────────────────────────────
 
     public function workOrder(): BelongsTo
     {
@@ -45,33 +60,42 @@ class FuelExpense extends Model
         return $this->belongsTo(Driver::class);
     }
 
-    public function fuelVendor(): BelongsTo
+    public function vehicle(): BelongsTo
     {
-        return $this->belongsTo(FuelVendor::class);
+        return $this->belongsTo(Vehicle::class);
     }
 
-    public function fuelType(): BelongsTo
+    public function recordedBy(): BelongsTo
     {
-        return $this->belongsTo(FuelType::class);
+        return $this->belongsTo(User::class, 'recorded_by');
     }
 
-    public function fuelUnit(): BelongsTo
+    // ── Accessors ────────────────────────────────────────────────────────────
+
+    protected function totalCostFormatted(): Attribute
     {
-        return $this->belongsTo(FuelUnit::class);
+        return Attribute::get(fn () => '$' . number_format($this->total_cost / 100, 2));
     }
 
-    public function receiptType(): BelongsTo
+    protected function costPerLitreFormatted(): Attribute
     {
-        return $this->belongsTo(ReceiptType::class);
+        return Attribute::get(fn () => '$' . number_format($this->cost_per_litre / 100, 4));
     }
 
-    public function paymentMethod(): BelongsTo
+    // ── Scopes ───────────────────────────────────────────────────────────────
+
+    public function scopeForWorkOrder(Builder $query, int $workOrderId): Builder
     {
-        return $this->belongsTo(PaymentMethod::class);
+        return $query->where('work_order_id', $workOrderId);
     }
 
-    public function craLine(): BelongsTo
+    public function scopeForDriver(Builder $query, int $driverId): Builder
     {
-        return $this->belongsTo(CraT2125Line::class, 'cra_t2125_id');
+        return $query->where('driver_id', $driverId);
+    }
+
+    public function scopeForVehicle(Builder $query, int $vehicleId): Builder
+    {
+        return $query->where('vehicle_id', $vehicleId);
     }
 }

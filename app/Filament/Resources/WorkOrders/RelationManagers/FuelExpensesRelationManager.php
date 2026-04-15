@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\WorkOrders\RelationManagers;
 
+use App\Models\Vehicle;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -13,12 +14,13 @@ use Filament\Actions\RestoreAction;
 use Filament\Actions\RestoreBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\Summarizers\Sum;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
@@ -31,71 +33,114 @@ class FuelExpensesRelationManager extends RelationManager
     public function form(Schema $schema): Schema
     {
         return $schema->components([
+            Select::make('vehicle_id')
+                ->relationship('vehicle', 'id')
+                ->getOptionLabelFromRecordUsing(fn ($record) => trim("{$record->year} {$record->make?->name} {$record->model?->name}"))
+                ->label('Vehicle')
+                ->required()
+                ->searchable(),
+
             Select::make('driver_id')
-                ->relationship('driver.user', 'name')
+                ->relationship('driver', 'id')
+                ->getOptionLabelFromRecordUsing(fn ($record) => $record->user?->name ?? "Driver #{$record->id}")
                 ->label('Driver')
+                ->nullable()
+                ->searchable(),
+
+            DatePicker::make('fuel_date')
                 ->required(),
-            Select::make('fuel_vendor_id')
-                ->relationship('fuelVendor', 'name')
-                ->label('Fuel Vendor')
-                ->required(),
-            Select::make('fuel_type_id')
-                ->relationship('fuelType', 'name')
-                ->label('Fuel Type')
-                ->required(),
-            Select::make('fuel_unit_id')
-                ->relationship('fuelUnit', 'name')
-                ->label('Unit')
-                ->required(),
-            TextInput::make('quantity')
+
+            TextInput::make('litres')
                 ->numeric()
                 ->required()
-                ->step(0.001),
-            TextInput::make('amount')
+                ->step(0.01)
+                ->suffix('L'),
+
+            TextInput::make('cost_per_litre')
+                ->label('Cost per Litre')
                 ->numeric()
+                ->prefix('$')
+                ->step(0.0001)
                 ->required()
-                ->suffix('¢')
-                ->label('Amount (cents)'),
-            DatePicker::make('receipt_date')
-                ->required(),
-            Select::make('receipt_type_id')
-                ->relationship('receiptType', 'name')
-                ->label('Receipt Type')
-                ->required(),
-            Select::make('payment_method_id')
-                ->relationship('paymentMethod', 'name')
-                ->label('Payment Method')
-                ->required(),
-            Toggle::make('is_reimbursable')
-                ->default(true),
+                ->afterStateHydrated(fn ($component, $state) =>
+                    $component->state($state !== null ? number_format($state / 100, 4, '.', '') : null)
+                )
+                ->dehydrateStateUsing(fn ($state) => $state !== null ? (int) round((float) $state * 100) : null),
+
+            TextInput::make('total_cost')
+                ->label('Total Cost (auto-calculated)')
+                ->prefix('$')
+                ->disabled()
+                ->dehydrated(false)
+                ->afterStateHydrated(fn ($component, $state) =>
+                    $component->state($state !== null ? number_format($state / 100, 2, '.', '') : null)
+                ),
+
+            TextInput::make('odometer_reading')
+                ->label('Odometer (km)')
+                ->numeric()
+                ->nullable(),
+
+            TextInput::make('station_name')
+                ->label('Station Name')
+                ->nullable()
+                ->columnSpanFull(),
+
+            Textarea::make('notes')
+                ->nullable()
+                ->columnSpanFull(),
         ]);
     }
 
     public function table(Table $table): Table
     {
         return $table
-            ->recordTitleAttribute('id')
+            ->recordTitleAttribute('station_name')
             ->columns([
-                TextColumn::make('receipt_date')
+                TextColumn::make('fuel_date')
                     ->date()
                     ->sortable(),
+
+                TextColumn::make('vehicle.id')
+                    ->label('Vehicle')
+                    ->formatStateUsing(fn ($record) => trim("{$record->vehicle?->year} {$record->vehicle?->make?->name} {$record->vehicle?->model?->name}")),
+
                 TextColumn::make('driver.user.name')
                     ->label('Driver')
-                    ->searchable(),
-                TextColumn::make('fuelVendor.name')
-                    ->label('Vendor'),
-                TextColumn::make('fuelType.name')
-                    ->label('Fuel'),
-                TextColumn::make('quantity')
-                    ->numeric(3),
-                TextColumn::make('amount')
-                    ->suffix('¢')
-                    ->sortable(),
-                IconColumn::make('is_reimbursable')
-                    ->boolean()
-                    ->label('Reimb.'),
+                    ->toggleable(),
+
+                TextColumn::make('litres')
+                    ->numeric(2)
+                    ->suffix(' L'),
+
+                TextColumn::make('cost_per_litre')
+                    ->label('Cost/L')
+                    ->formatStateUsing(fn ($state) => '$' . number_format($state / 100, 4)),
+
+                TextColumn::make('total_cost')
+                    ->label('Total')
+                    ->formatStateUsing(fn ($state) => '$' . number_format($state / 100, 2))
+                    ->sortable()
+                    ->summarize(
+                        Sum::make()
+                            ->label('Subtotal')
+                            ->formatStateUsing(fn ($state) => '$' . number_format($state / 100, 2))
+                    ),
+
+                TextColumn::make('odometer_reading')
+                    ->label('Odometer')
+                    ->suffix(' km')
+                    ->toggleable(),
             ])
+            ->defaultSort('fuel_date', 'desc')
             ->filters([
+                SelectFilter::make('vehicle_id')
+                    ->label('Vehicle')
+                    ->options(
+                        Vehicle::orderBy('id')
+                            ->get()
+                            ->mapWithKeys(fn ($v) => [$v->id => trim("{$v->year} {$v->make?->name} {$v->model?->name}")])
+                    ),
                 TrashedFilter::make(),
             ])
             ->headerActions([

@@ -3,11 +3,11 @@
 namespace App\Filament\Resources\Expenses\Schemas;
 
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
 class ExpenseForm
@@ -21,35 +21,60 @@ class ExpenseForm
                     ->schema([
                         Select::make('work_order_id')
                             ->relationship('workOrder', 'work_order_number')
+                            ->label('Work Order')
                             ->required()
-                            ->searchable(),
-                        Select::make('driver_id')
-                            ->relationship('driver', 'id')
-                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->user->name ?? "Driver #{$record->id}")
-                            ->required()
-                            ->searchable(),
+                            ->searchable()
+                            ->preload(),
+
                         Select::make('expense_category_id')
                             ->relationship('category', 'name')
                             ->label('Category')
                             ->required()
                             ->searchable()
                             ->preload(),
-                        Select::make('vendor_id')
-                            ->relationship('vendor', 'name')
-                            ->searchable()
-                            ->nullable(),
-                        Select::make('receipt_type_id')
-                            ->relationship('receiptType', 'name')
+
+                        Select::make('driver_id')
+                            ->relationship('driver', 'id')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->user?->name ?? "Driver #{$record->id}")
+                            ->label('Driver')
+                            ->nullable()
+                            ->searchable(),
+
+                        Select::make('vehicle_id')
+                            ->relationship('vehicle', 'id')
+                            ->getOptionLabelFromRecordUsing(fn ($record) => trim("{$record->year} {$record->make?->name} {$record->model?->name}"))
+                            ->label('Vehicle')
+                            ->nullable()
+                            ->searchable(),
+
+                        TextInput::make('description')
                             ->required()
-                            ->preload(),
-                        Select::make('payment_method_id')
-                            ->relationship('paymentMethod', 'name')
+                            ->maxLength(255)
+                            ->columnSpanFull(),
+
+                        TextInput::make('amount')
+                            ->label('Amount')
+                            ->numeric()
+                            ->prefix('$')
+                            ->step(0.01)
                             ->required()
-                            ->preload(),
-                        TextInput::make('amount')->numeric()->required()->suffix('¢'),
-                        DatePicker::make('receipt_date')->required(),
-                        Toggle::make('is_reimbursable')->default(true),
-                        Textarea::make('notes')->columnSpanFull(),
+                            ->afterStateHydrated(fn ($component, $state) =>
+                                $component->state($state !== null ? number_format($state / 100, 2, '.', '') : null)
+                            )
+                            ->dehydrateStateUsing(fn ($state) => $state !== null ? (int) round((float) $state * 100) : null),
+
+                        DatePicker::make('expense_date')
+                            ->required(),
+
+                        FileUpload::make('receipt_path')
+                            ->label('Receipt')
+                            ->directory('receipts/expenses')
+                            ->nullable()
+                            ->columnSpanFull(),
+
+                        Textarea::make('notes')
+                            ->nullable()
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

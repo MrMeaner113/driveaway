@@ -5,6 +5,7 @@ namespace App\Filament\Resources\FuelExpenses;
 use App\Filament\Resources\FuelExpenses\Pages\CreateFuelExpense;
 use App\Filament\Resources\FuelExpenses\Pages\EditFuelExpense;
 use App\Filament\Resources\FuelExpenses\Pages\ListFuelExpenses;
+use App\Filament\Resources\FuelExpenses\Pages\ViewFuelExpense;
 use App\Filament\Resources\FuelExpenses\Schemas\FuelExpenseForm;
 use App\Filament\Resources\FuelExpenses\Tables\FuelExpensesTable;
 use App\Models\FuelExpense;
@@ -48,6 +49,7 @@ class FuelExpenseResource extends Resource
         return [
             'index'  => ListFuelExpenses::route('/'),
             'create' => CreateFuelExpense::route('/create'),
+            'view'   => ViewFuelExpense::route('/{record}'),
             'edit'   => EditFuelExpense::route('/{record}/edit'),
         ];
     }

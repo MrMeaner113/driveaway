@@ -10,16 +10,17 @@ return new class extends Migration
     {
         Schema::create('expenses', function (Blueprint $table) {
             $table->id();
+            $table->ulid()->unique();
             $table->foreignId('work_order_id')->constrained('work_orders');
-            $table->foreignId('driver_id')->constrained('drivers');
+            $table->foreignId('driver_id')->nullable()->constrained('drivers')->nullOnDelete();
+            $table->foreignId('vehicle_id')->nullable()->constrained('vehicles')->nullOnDelete();
             $table->foreignId('expense_category_id')->constrained('expense_categories');
-            $table->foreignId('vendor_id')->nullable()->constrained('vendors')->nullOnDelete();
-            $table->foreignId('receipt_type_id')->constrained('receipt_types');
-            $table->foreignId('payment_method_id')->constrained('payment_methods');
-            $table->unsignedInteger('amount');  // cents
-            $table->date('receipt_date');
-            $table->boolean('is_reimbursable')->default(true);
+            $table->string('description');
+            $table->unsignedInteger('amount');          // cents
+            $table->date('expense_date');
+            $table->string('receipt_path')->nullable(); // uploaded receipt
             $table->text('notes')->nullable();
+            $table->foreignId('recorded_by')->constrained('users');
             $table->timestamps();
             $table->softDeletes();
         });
