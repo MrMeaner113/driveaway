@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\QuoteRequests\Schemas;
 
+use App\Models\VehicleCategory;
 use App\Models\VehicleMake;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Repeater;
@@ -9,6 +10,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Schema;
 
 class QuoteRequestForm
@@ -70,6 +72,12 @@ class QuoteRequestForm
 
                 Section::make('Vehicles')
                     ->schema([
+                        Select::make('vehicle_category_id')
+                            ->label('Vehicle Category')
+                            ->options(VehicleCategory::pluck('name', 'id'))
+                            ->nullable()
+                            ->searchable()
+                            ->helperText('Assign category during review'),
                         Repeater::make('vehicles')
                             ->relationship('vehicles')
                             ->schema([
@@ -89,6 +97,44 @@ class QuoteRequestForm
                                 TextInput::make('vehicle_model')
                                     ->label('Model')
                                     ->required(),
+
+                                // ── Post-acceptance details ──────────────
+                                Section::make('Post-Acceptance Details')
+                                    ->columnSpanFull()
+                                    ->collapsed()
+                                    ->schema([
+                                        TextInput::make('vehicle_vin')
+                                            ->label('VIN')
+                                            ->nullable()
+                                            ->maxLength(50),
+                                        TextInput::make('vehicle_colour')
+                                            ->label('Colour')
+                                            ->nullable()
+                                            ->maxLength(50),
+                                        TextInput::make('license_plate')
+                                            ->label('License Plate')
+                                            ->nullable()
+                                            ->maxLength(20),
+                                        TextInput::make('license_province')
+                                            ->label('License Province/State')
+                                            ->nullable()
+                                            ->maxLength(10),
+                                        Toggle::make('is_licensed')
+                                            ->label('Currently Licensed')
+                                            ->default(true),
+                                        Toggle::make('requires_transport_plates')
+                                            ->label('Requires Transport Plates')
+                                            ->default(false),
+                                        TextInput::make('mileage')
+                                            ->label('Mileage (km)')
+                                            ->numeric()
+                                            ->nullable(),
+                                        Textarea::make('modifications')
+                                            ->label('Modifications')
+                                            ->nullable()
+                                            ->columnSpanFull(),
+                                    ])
+                                    ->columns(2),
                             ])
                             ->columns(3)
                             ->minItems(1)
@@ -119,6 +165,10 @@ class QuoteRequestForm
                             ])
                             ->required(),
                         Textarea::make('notes')->columnSpanFull(),
+                        Textarea::make('notes_internal')
+                            ->label('Internal Notes (staff only — never shown to client)')
+                            ->helperText('Visible to staff only')
+                            ->columnSpanFull(),
                     ]),
             ]);
     }

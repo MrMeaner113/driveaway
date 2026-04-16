@@ -10,9 +10,15 @@ class WorkOrderExpenseSummaryWidget extends BaseWidget
 {
     use InteractsWithRecord;
 
+    protected static bool $isDiscovered = false;
+
     protected function getStats(): array
     {
         $record = $this->getRecord();
+
+        if (! $record) {
+            return [];
+        }
 
         $expensesTotal  = $record->expenses()->sum('amount');
         $fuelTotal      = $record->fuelExpenses()->sum('total_cost');

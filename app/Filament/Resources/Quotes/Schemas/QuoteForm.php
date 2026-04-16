@@ -3,8 +3,12 @@
 namespace App\Filament\Resources\Quotes\Schemas;
 
 use App\Models\Contact;
+use App\Models\DiscountReason;
+use App\Models\TripPlan;
+use App\Models\VehicleCategory;
 use Filament\Forms\Components\DatePicker;
-use Filament\Forms\Components\Section;
+use Filament\Forms\Components\Placeholder;
+use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -91,6 +95,81 @@ class QuoteForm
                 Section::make('Notes')
                     ->schema([
                         Textarea::make('notes')->columnSpanFull(),
+                    ]),
+
+                Section::make('Pricing')
+                    ->columns(2)
+                    ->schema([
+                        // Trip plan suggested total (read-only)
+                        Placeholder::make('trip_plan_suggested_total')
+                            ->label('Trip Plan Suggested Total')
+                            ->content(fn ($record) => $record?->tripPlan
+                                ? '$' . number_format($record->tripPlan->total_cents / 100, 2)
+                                : 'No trip plan linked'),
+
+                        Select::make('trip_plan_id')
+                            ->label('Trip Plan')
+                            ->options(fn ($record) => TripPlan::when($record, fn ($q) =>
+                                    $q->where('quote_request_id', $record->quote_request_id ?? null)
+                                )
+                                ->get()
+                                ->mapWithKeys(fn ($p) => [
+                                    $p->id => "#{$p->id} — " . '$' . number_format($p->total_cents / 100, 2),
+                                ]))
+                            ->nullable()
+                            ->searchable(),
+
+                        Select::make('vehicle_category_id')
+                            ->label('Vehicle Category')
+                            ->options(VehicleCategory::pluck('name', 'id'))
+                            ->nullable()
+                            ->searchable(),
+
+                        Select::make('discount_type')
+                            ->label('Discount Type')
+                            ->options([
+                                'percentage' => 'Percentage',
+                                'flat'       => 'Flat Amount',
+                            ])
+                            ->nullable()
+                            ->live(),
+
+                        TextInput::make('discount_value')
+                            ->label(fn ($get) => $get('discount_type') === 'percentage'
+                                ? 'Discount % (basis points, e.g. 1000 = 10%)'
+                                : 'Discount Amount ($)')
+                            ->numeric()
+                            ->nullable()
+                            ->visible(fn ($get) => filled($get('discount_type')))
+                            ->dehydrateStateUsing(fn ($state, $get) =>
+                                $get('discount_type') === 'flat'
+                                    ? (int) round($state * 100)
+                                    : (int) $state
+                            )
+                            ->formatStateUsing(fn ($state, $get) =>
+                                ($get('discount_type') === 'flat' && $state)
+                                    ? number_format($state / 100, 2)
+                                    : $state
+                            ),
+
+                        Select::make('discount_reason_id')
+                            ->label('Discount Reason')
+                            ->options(DiscountReason::pluck('name', 'id'))
+                            ->nullable()
+                            ->visible(fn ($get) => filled($get('discount_type'))),
+
+                        Placeholder::make('discount_amount_cents')
+                            ->label('Computed Discount')
+                            ->content(fn ($record) => $record
+                                ? '$' . number_format($record->discount_amount_cents / 100, 2)
+                                : '—')
+                            ->visible(fn ($get) => filled($get('discount_type'))),
+
+                        Placeholder::make('final_price')
+                            ->label('Final Price (after discount + tax)')
+                            ->content(fn ($record) => $record
+                                ? '$' . number_format(($record->total - $record->discount_amount_cents) / 100, 2)
+                                : '—'),
                     ]),
             ]);
     }

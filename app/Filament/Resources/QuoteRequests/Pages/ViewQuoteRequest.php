@@ -4,8 +4,10 @@ namespace App\Filament\Resources\QuoteRequests\Pages;
 
 use App\Filament\Resources\QuoteRequests\QuoteRequestResource;
 use App\Filament\Resources\QuoteRequests\Schemas\QuoteRequestInfolist;
+use App\Filament\Resources\TripPlans\TripPlanResource;
 use App\Models\City;
 use App\Models\Province;
+use App\Models\TripPlan;
 use App\Models\VehicleMake;
 use App\Models\VehicleModel;
 use App\Services\QuotePromotionService;
@@ -57,6 +59,21 @@ class ViewQuoteRequest extends ViewRecord
                 ->color(fn (): string => static::statusColor($this->record?->status ?? 'new'))
                 ->button()
                 ->visible(fn (): bool => $this->record && ! $this->record->isTerminal()),
+
+            // ── Create Trip Plan ──────────────────────────────────────────
+
+            Action::make('createTripPlan')
+                ->label('Create Trip Plan')
+                ->icon('heroicon-o-calculator')
+                ->color('primary')
+                ->visible(fn (): bool =>
+                    $this->record
+                    && ! $this->record->isTerminal()
+                    && ! $this->record->tripPlan()->exists()
+                )
+                ->url(fn () => TripPlanResource::getUrl('create', [
+                    'quote_request_id' => $this->record->id,
+                ])),
 
             EditAction::make(),
 
