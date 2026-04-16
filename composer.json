@@ -18,6 +18,7 @@
         "spatie/laravel-permission": "^7.3"
     },
     "require-dev": {
+        "barryvdh/laravel-ide-helper": "^3.7",
         "fakerphp/faker": "^1.24",
         "laravel/pail": "^1.2.5",
         "laravel/pint": "^1.27",
@@ -73,6 +74,9 @@
             "@php artisan filament:upgrade"
         ],
         "post-update-cmd": [
+            "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:meta",
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
         ],
         "post-root-package-install": [
