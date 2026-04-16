@@ -16,6 +16,8 @@ class AddOnService extends Model
         'description',
         'is_active',
         'sort_order',
+        'rate_type',
+        'base_rate',
     ];
 
     protected $casts = [

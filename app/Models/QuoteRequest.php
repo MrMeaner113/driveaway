@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
@@ -41,6 +42,8 @@ class QuoteRequest extends Model
         'expired_at',
         'reviewed_by',
         'quoted_by',
+        'vehicle_category_id',
+        'notes_internal',
     ];
 
     protected function casts(): array
@@ -116,6 +119,16 @@ class QuoteRequest extends Model
     public function addOnServices(): BelongsToMany
     {
         return $this->belongsToMany(AddOnService::class, 'quote_request_add_on_services');
+    }
+
+    public function vehicleCategory(): BelongsTo
+    {
+        return $this->belongsTo(VehicleCategory::class);
+    }
+
+    public function tripPlan(): HasOne
+    {
+        return $this->hasOne(TripPlan::class);
     }
 
     // ── Accessors ────────────────────────────────────────────────────────────

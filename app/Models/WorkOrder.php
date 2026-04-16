@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class WorkOrder extends Model
@@ -125,6 +126,26 @@ class WorkOrder extends Model
     public function documents(): HasMany
     {
         return $this->hasMany(Document::class);
+    }
+
+    public function vehicleInspections(): HasMany
+    {
+        return $this->hasMany(VehicleInspection::class);
+    }
+
+    public function tripLogs(): HasMany
+    {
+        return $this->hasMany(TripLog::class);
+    }
+
+    public function driverTravel(): HasMany
+    {
+        return $this->hasMany(DriverTravel::class);
+    }
+
+    public function gpsTracking(): HasOne
+    {
+        return $this->hasOne(GpsTracking::class);
     }
 
     // ── Accessors ────────────────────────────────────────────────────────────

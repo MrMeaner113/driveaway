@@ -14,7 +14,24 @@ class QuoteRequestVehicle extends Model
         'vehicle_make_custom',
         'vehicle_model_id',
         'vehicle_model_custom',
+        // Post-acceptance details
+        'vehicle_vin',
+        'vehicle_colour',
+        'license_plate',
+        'license_province',
+        'is_licensed',
+        'requires_transport_plates',
+        'modifications',
+        'mileage',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_licensed'               => 'boolean',
+            'requires_transport_plates' => 'boolean',
+        ];
+    }
 
     // ── Relationships ────────────────────────────────────────────────────────
 

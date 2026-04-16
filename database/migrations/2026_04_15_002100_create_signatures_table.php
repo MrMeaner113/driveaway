@@ -1,0 +1,28 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('signatures', function (Blueprint $table) {
+            $table->id();
+            $table->char('ulid', 26)->unique();
+            $table->morphs('signable');
+            $table->string('signer_name');
+            $table->string('signer_role');          // e.g. client, driver, receiver
+            $table->text('signature_data');          // base64 encoded image
+            $table->timestamp('signed_at');
+            $table->string('ip_address')->nullable();
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('signatures');
+    }
+};

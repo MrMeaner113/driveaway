@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -35,6 +34,12 @@ class Quote extends Model
         'notes',
         'expires_at',
         'created_by',
+        'trip_plan_id',
+        'vehicle_category_id',
+        'discount_type',
+        'discount_value',
+        'discount_reason_id',
+        'discount_amount_cents',
     ];
 
     protected function casts(): array
@@ -104,5 +109,57 @@ class Quote extends Model
     public function workOrder(): HasOne
     {
         return $this->hasOne(WorkOrder::class);
+    }
+
+    public function tripPlan(): BelongsTo
+    {
+        return $this->belongsTo(TripPlan::class);
+    }
+
+    public function vehicleCategory(): BelongsTo
+    {
+        return $this->belongsTo(VehicleCategory::class);
+    }
+
+    public function discountReason(): BelongsTo
+    {
+        return $this->belongsTo(DiscountReason::class);
+    }
+
+    // ── Accessors ────────────────────────────────────────────────────────────
+
+    public function getDiscountFormattedAttribute(): string
+    {
+        if (! $this->discount_type || ! $this->discount_value) {
+            return '$0.00';
+        }
+
+        if ($this->discount_type === 'percentage') {
+            $pct = $this->discount_value / 100;
+            return number_format($pct, 2) . '%';
+        }
+
+        return '$' . number_format($this->discount_value / 100, 2);
+    }
+
+    // ── Methods ──────────────────────────────────────────────────────────────
+
+    /**
+     * Compute discount_amount_cents from discount_type + discount_value
+     * applied against the total (subtotal + tax).
+     */
+    public function applyDiscount(): void
+    {
+        if (! $this->discount_type || ! $this->discount_value) {
+            $this->discount_amount_cents = 0;
+            return;
+        }
+
+        if ($this->discount_type === 'flat') {
+            $this->discount_amount_cents = $this->discount_value;
+        } else {
+            // percentage: discount_value is basis points (e.g. 1000 = 10%)
+            $this->discount_amount_cents = (int) round($this->total * ($this->discount_value / 10000));
+        }
     }
 }
