@@ -63,6 +63,7 @@ class QuoteRequestController extends Controller
             'destination_city_custom'     => ['nullable', 'string', 'max:150', 'required_without:destination_city_id'],
 
             'preferred_date'           => ['nullable', 'date', 'after:today'],
+            'date_type'                => ['nullable', 'string', 'in:pickup,delivery'],
             'notes'                    => ['nullable', 'string', 'max:2000'],
             'add_on_services'          => ['nullable', 'array'],
             'add_on_services.*'        => ['exists:add_on_services,id'],
@@ -75,7 +76,9 @@ class QuoteRequestController extends Controller
             'vehicles.*.vehicle_model_custom'   => ['nullable', 'string', 'max:100', 'required_without:vehicles.*.vehicle_model_id'],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $quoteNumber = QuoteRequest::generateQuoteNumber();
+
+        DB::transaction(function () use ($validated, $quoteNumber) {
             $originProvinceId   = $validated['origin_province_id'] ?? null;
             $originCityId       = $validated['origin_city_id'] ?? null;
             $destProvinceId     = $validated['destination_province_id'] ?? null;
@@ -97,6 +100,8 @@ class QuoteRequestController extends Controller
                 'destination_city_id'     => $destCityId,
                 'destination_city_custom' => $destCityId ? null : ($validated['destination_city_custom'] ?? null),
                 'preferred_date'          => $validated['preferred_date'] ?? null,
+                'date_type'               => $validated['date_type'] ?? 'pickup',
+                'quote_number'            => $quoteNumber,
                 'notes'                   => $validated['notes'] ?? null,
                 'status'                  => 'new',
             ]);
@@ -119,7 +124,7 @@ class QuoteRequestController extends Controller
             }
         });
 
-        return redirect()->route('quote-request.confirmation');
+        return redirect()->route('quote-request.confirmation')->with('quote_number', $quoteNumber);
     }
 
     public function provinces(Country $country): JsonResponse

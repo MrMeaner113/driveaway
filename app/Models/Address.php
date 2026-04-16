@@ -6,6 +6,51 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property int $address_type_id
+ * @property int|null $contact_id
+ * @property int|null $organization_id
+ * @property string $line1
+ * @property string|null $line2
+ * @property int $city_id
+ * @property int $province_id
+ * @property int $country_id
+ * @property string $postal_code
+ * @property bool $is_primary
+ * @property bool $is_active
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property \Carbon\CarbonImmutable|null $deleted_at
+ * @property-read \App\Models\AddressType|null $addressType
+ * @property-read \App\Models\City|null $city
+ * @property-read \App\Models\Contact|null $contact
+ * @property-read \App\Models\Country|null $country
+ * @property-read \App\Models\Organization|null $organization
+ * @property-read \App\Models\Province|null $province
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereAddressTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereCityId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereContactId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereCountryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereIsPrimary($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereLine1($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereLine2($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereOrganizationId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address wherePostalCode($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereProvinceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Address withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Address extends Model
 {
     use SoftDeletes;

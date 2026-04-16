@@ -8,6 +8,56 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $ulid
+ * @property int $work_order_id
+ * @property int|null $driver_id
+ * @property int $vehicle_id
+ * @property numeric $litres
+ * @property int $cost_per_litre
+ * @property int $total_cost
+ * @property int|null $odometer_reading
+ * @property \Carbon\CarbonImmutable $fuel_date
+ * @property string|null $station_name
+ * @property string|null $notes
+ * @property int $recorded_by
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property \Carbon\CarbonImmutable|null $deleted_at
+ * @property-read mixed $cost_per_litre_formatted
+ * @property-read \App\Models\Driver|null $driver
+ * @property-read \App\Models\User|null $recordedBy
+ * @property-read mixed $total_cost_formatted
+ * @property-read \App\Models\Vehicle|null $vehicle
+ * @property-read \App\Models\WorkOrder|null $workOrder
+ * @method static Builder<static>|FuelExpense forDriver(int $driverId)
+ * @method static Builder<static>|FuelExpense forVehicle(int $vehicleId)
+ * @method static Builder<static>|FuelExpense forWorkOrder(int $workOrderId)
+ * @method static Builder<static>|FuelExpense newModelQuery()
+ * @method static Builder<static>|FuelExpense newQuery()
+ * @method static Builder<static>|FuelExpense onlyTrashed()
+ * @method static Builder<static>|FuelExpense query()
+ * @method static Builder<static>|FuelExpense whereCostPerLitre($value)
+ * @method static Builder<static>|FuelExpense whereCreatedAt($value)
+ * @method static Builder<static>|FuelExpense whereDeletedAt($value)
+ * @method static Builder<static>|FuelExpense whereDriverId($value)
+ * @method static Builder<static>|FuelExpense whereFuelDate($value)
+ * @method static Builder<static>|FuelExpense whereId($value)
+ * @method static Builder<static>|FuelExpense whereLitres($value)
+ * @method static Builder<static>|FuelExpense whereNotes($value)
+ * @method static Builder<static>|FuelExpense whereOdometerReading($value)
+ * @method static Builder<static>|FuelExpense whereRecordedBy($value)
+ * @method static Builder<static>|FuelExpense whereStationName($value)
+ * @method static Builder<static>|FuelExpense whereTotalCost($value)
+ * @method static Builder<static>|FuelExpense whereUlid($value)
+ * @method static Builder<static>|FuelExpense whereUpdatedAt($value)
+ * @method static Builder<static>|FuelExpense whereVehicleId($value)
+ * @method static Builder<static>|FuelExpense whereWorkOrderId($value)
+ * @method static Builder<static>|FuelExpense withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|FuelExpense withoutTrashed()
+ * @mixin \Eloquent
+ */
 class FuelExpense extends Model
 {
     use SoftDeletes;

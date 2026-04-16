@@ -7,6 +7,53 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $first_name
+ * @property string $last_name
+ * @property string|null $email
+ * @property string|null $phone
+ * @property string|null $phone_ext
+ * @property string|null $mobile
+ * @property int $contact_type_id
+ * @property int $contact_status_id
+ * @property int|null $preferred_contact_method_id
+ * @property int|null $organization_id
+ * @property string|null $notes
+ * @property bool $is_active
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property \Carbon\CarbonImmutable|null $deleted_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Address> $addresses
+ * @property-read int|null $addresses_count
+ * @property-read \App\Models\ContactStatus|null $contactStatus
+ * @property-read \App\Models\ContactType|null $contactType
+ * @property-read \App\Models\Organization|null $organization
+ * @property-read \App\Models\PreferredContactMethod|null $preferredContactMethod
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereContactStatusId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereContactTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereEmail($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereFirstName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereLastName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereMobile($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereOrganizationId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact wherePhone($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact wherePhoneExt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact wherePreferredContactMethodId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Contact withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Contact extends Model
 {
     use SoftDeletes;

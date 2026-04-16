@@ -70,8 +70,21 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
-                        <input type="tel" name="phone" value="{{ old('phone') }}"
-                            @class(['w-full px-3 py-2 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-sm', 'border-2 border-red-500' => $errors->has('phone'), 'border border-gray-300' => !$errors->has('phone')])>
+                        <div style="display:flex; align-items:stretch;">
+                            <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm font-medium">+1</span>
+                            <input type="tel" name="phone" value="{{ old('phone') }}"
+                                x-on:input="
+                                    let d = $event.target.value.replace(/\D/g, '').substring(0, 10);
+                                    let f = d.length > 6
+                                        ? d.slice(0,3) + '-' + d.slice(3,6) + '-' + d.slice(6)
+                                        : d.length > 3
+                                        ? d.slice(0,3) + '-' + d.slice(3)
+                                        : d;
+                                    $event.target.value = f;
+                                "
+                                placeholder="000-000-0000"
+                                @class(['w-full px-3 py-2 rounded-r-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-sm', 'border-2 border-r-2 border-red-500' => $errors->has('phone'), 'border border-l-0 border-gray-300' => !$errors->has('phone')])>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -328,7 +341,24 @@
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Additional Details</h2>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Preferred Pickup Date</label>
+                        <div class="flex gap-6 mb-3">
+                            <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700">
+                                <input type="radio" @click="dateType = 'pickup'" :checked="dateType === 'pickup'"
+                                    class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500 cursor-pointer"
+                                    style="accent-color: #dc2626;">
+                                Preferred Pickup Date
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700">
+                                <input type="radio" @click="dateType = 'delivery'" :checked="dateType === 'delivery'"
+                                    class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500 cursor-pointer"
+                                    style="accent-color: #dc2626;">
+                                Preferred Delivery Date
+                            </label>
+                        </div>
+                        <input type="hidden" name="date_type" :value="dateType">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            <span x-text="dateType === 'pickup' ? 'When should we pick up your vehicle?' : 'When do you need it delivered?'"></span>
+                        </label>
                         <input type="date" name="preferred_date" value="{{ old('preferred_date') }}"
                             min="{{ now()->addDay()->toDateString() }}"
                             class="w-full sm:w-48 rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm">
@@ -358,6 +388,9 @@
     <script>
         function quoteRequestForm(defaultCountryId, initialProvinces, vehicleMakes) {
             return {
+                // ── Date type ────────────────────────────────────────────────
+                dateType: 'pickup',
+
                 // ── Vehicles ─────────────────────────────────────────────────
                 vehicles: [{
                     vehicle_year: '',

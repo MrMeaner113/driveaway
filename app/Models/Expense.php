@@ -9,6 +9,53 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property int $work_order_id
+ * @property int $driver_id
+ * @property int $expense_category_id
+ * @property int|null $vendor_id
+ * @property int $receipt_type_id
+ * @property int $payment_method_id
+ * @property int $amount
+ * @property string $receipt_date
+ * @property int $is_reimbursable
+ * @property string|null $notes
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property \Carbon\CarbonImmutable|null $deleted_at
+ * @property-read mixed $amount_formatted
+ * @property-read \App\Models\ExpenseCategory|null $category
+ * @property-read \App\Models\Driver|null $driver
+ * @property-read \App\Models\User|null $recordedBy
+ * @property-read \App\Models\Vehicle|null $vehicle
+ * @property-read \App\Models\WorkOrder|null $workOrder
+ * @method static Builder<static>|Expense byCategory(int $categoryId)
+ * @method static Builder<static>|Expense forDriver(int $driverId)
+ * @method static Builder<static>|Expense forVehicle(int $vehicleId)
+ * @method static Builder<static>|Expense forWorkOrder(int $workOrderId)
+ * @method static Builder<static>|Expense newModelQuery()
+ * @method static Builder<static>|Expense newQuery()
+ * @method static Builder<static>|Expense onlyTrashed()
+ * @method static Builder<static>|Expense query()
+ * @method static Builder<static>|Expense whereAmount($value)
+ * @method static Builder<static>|Expense whereCreatedAt($value)
+ * @method static Builder<static>|Expense whereDeletedAt($value)
+ * @method static Builder<static>|Expense whereDriverId($value)
+ * @method static Builder<static>|Expense whereExpenseCategoryId($value)
+ * @method static Builder<static>|Expense whereId($value)
+ * @method static Builder<static>|Expense whereIsReimbursable($value)
+ * @method static Builder<static>|Expense whereNotes($value)
+ * @method static Builder<static>|Expense wherePaymentMethodId($value)
+ * @method static Builder<static>|Expense whereReceiptDate($value)
+ * @method static Builder<static>|Expense whereReceiptTypeId($value)
+ * @method static Builder<static>|Expense whereUpdatedAt($value)
+ * @method static Builder<static>|Expense whereVendorId($value)
+ * @method static Builder<static>|Expense whereWorkOrderId($value)
+ * @method static Builder<static>|Expense withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|Expense withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Expense extends Model
 {
     use SoftDeletes;

@@ -5,6 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+/**
+ * @property-read \App\Models\WorkOrder|null $workOrder
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|GpsTracking newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|GpsTracking newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|GpsTracking query()
+ * @mixin \Eloquent
+ */
 class GpsTracking extends Model
 {
     protected $fillable = [

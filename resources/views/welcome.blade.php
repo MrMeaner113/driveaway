@@ -33,7 +33,7 @@
 
         <!-- Get a Quote - bottom left -->
         <div class="absolute bottom-6 left-6 z-10">
-            <a href="#QuoteRequest" class="btn-brand">Get a Quote</a>
+            <a href="quote-request" class="btn-brand">Get a Quote</a>
         </div>
 
         <!-- Contact Us - bottom right -->

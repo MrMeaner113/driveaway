@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use App\Models\City;
 use App\Models\Country;
 use App\Models\Province;
 use App\Models\QuoteRequest;
@@ -18,26 +19,33 @@ class QuoteRequestForm extends Component
     public string $phone      = '';
 
     // Vehicle
-    public string $vehicle_year   = '';
-    public string $vehicle_make   = '';
-    public array  $make_suggestions = [];
-    public ?int   $selected_make_id = null;
-    public string $vehicle_model  = '';
+    public string $vehicle_year      = '';
+    public string $vehicle_make      = '';
+    public array  $make_suggestions  = [];
+    public ?int   $selected_make_id  = null;
+    public string $vehicle_model     = '';
     public array  $model_suggestions = [];
 
     // Origin
-    public string $origin_country_id   = '';
-    public string $origin_province_id  = '';
-    public string $origin_city         = '';
+    public string $origin_country_id      = '';
+    public string $origin_province_id     = '';
+    public string $origin_city_input      = '';
+    public ?int   $origin_city_id         = null;
+    public array  $origin_city_suggestions = [];
 
     // Destination
-    public string $destination_country_id  = '';
-    public string $destination_province_id = '';
-    public string $destination_city        = '';
+    public string $destination_country_id      = '';
+    public string $destination_province_id     = '';
+    public string $destination_city_input      = '';
+    public ?int   $destination_city_id         = null;
+    public array  $destination_city_suggestions = [];
 
     // Date
-    public string $requested_date = '';
-    public bool   $submitted      = false;
+    public string $date_type      = 'pickup';
+    public string $preferred_date = '';
+
+    public bool   $submitted     = false;
+    public string $quote_number  = '';
 
     public function mount(): void
     {
@@ -52,7 +60,6 @@ class QuoteRequestForm extends Component
 
     public function updatedVehicleMake(): void
     {
-        // Reset dependent fields whenever the make changes
         $this->selected_make_id  = null;
         $this->vehicle_model     = '';
         $this->model_suggestions = [];
@@ -122,12 +129,116 @@ class QuoteRequestForm extends Component
 
     public function updatedOriginCountryId(): void
     {
-        $this->origin_province_id = '';
+        $this->origin_province_id      = '';
+        $this->origin_city_input       = '';
+        $this->origin_city_id          = null;
+        $this->origin_city_suggestions = [];
     }
 
     public function updatedDestinationCountryId(): void
     {
-        $this->destination_province_id = '';
+        $this->destination_province_id      = '';
+        $this->destination_city_input       = '';
+        $this->destination_city_id          = null;
+        $this->destination_city_suggestions = [];
+    }
+
+    public function updatedOriginProvinceId(): void
+    {
+        $this->origin_city_input = '';
+        $this->origin_city_id    = null;
+
+        $this->origin_city_suggestions = $this->origin_province_id
+            ? City::where('is_active', true)
+                ->where('province_id', $this->origin_province_id)
+                ->orderBy('name')
+                ->limit(50)
+                ->get(['id', 'name'])
+                ->toArray()
+            : [];
+    }
+
+    public function updatedDestinationProvinceId(): void
+    {
+        $this->destination_city_input = '';
+        $this->destination_city_id    = null;
+
+        $this->destination_city_suggestions = $this->destination_province_id
+            ? City::where('is_active', true)
+                ->where('province_id', $this->destination_province_id)
+                ->orderBy('name')
+                ->limit(50)
+                ->get(['id', 'name'])
+                ->toArray()
+            : [];
+    }
+
+    // ── Origin City Autocomplete ───────────────────────────────────────
+
+    public function updatedOriginCityInput(): void
+    {
+        $this->origin_city_id = null;
+
+        if (! $this->origin_province_id) {
+            $this->origin_city_suggestions = [];
+            return;
+        }
+
+        $search = trim($this->origin_city_input);
+
+        $query = City::where('is_active', true)->where('province_id', $this->origin_province_id);
+
+        if ($search !== '') {
+            $query->where('name', 'like', $search . '%');
+        }
+
+        $this->origin_city_suggestions = $query->orderBy('name')->limit($search !== '' ? 8 : 50)->get(['id', 'name'])->toArray();
+    }
+
+    public function selectOriginCity(int $id, string $name): void
+    {
+        $this->origin_city_input       = $name;
+        $this->origin_city_id          = $id;
+        $this->origin_city_suggestions = [];
+    }
+
+    public function clearOriginCitySuggestions(): void
+    {
+        $this->origin_city_suggestions = [];
+    }
+
+    // ── Destination City Autocomplete ──────────────────────────────────
+
+    public function updatedDestinationCityInput(): void
+    {
+        $this->destination_city_id = null;
+
+        if (! $this->destination_province_id) {
+            $this->destination_city_suggestions = [];
+            return;
+        }
+
+        $search = trim($this->destination_city_input);
+
+        $query = City::where('is_active', true)->where('province_id', $this->destination_province_id);
+
+        if ($search !== '') {
+            $query->where('name', 'like', $search . '%');
+        }
+
+        $this->destination_city_suggestions = $query->orderBy('name')->limit($search !== '' ? 8 : 50)->get(['id', 'name'])->toArray();
+    }
+
+    public function selectDestinationCity(int $id, string $name): void
+    {
+        $this->destination_city_input       = $name;
+        $this->destination_city_id          = $id;
+        $this->destination_city_suggestions = [];
+    }
+
+    public function clearDestinationCitySuggestions(): void
+    {
+        $this->destination_city_suggestions = [];
     }
 
     // ── Validation & Submit ────────────────────────────────────────────
@@ -135,20 +246,20 @@ class QuoteRequestForm extends Component
     protected function rules(): array
     {
         return [
-            'first_name'               => ['required', 'string', 'max:100'],
-            'last_name'                => ['required', 'string', 'max:100'],
-            'email'                    => ['nullable', 'email', 'max:255'],
-            'phone'                    => ['nullable', 'string', 'max:20'],
-            'vehicle_year'             => ['required', 'digits:4', 'integer', 'min:1900', 'max:' . (date('Y') + 2)],
-            'vehicle_make'             => ['required', 'string', 'max:100'],
-            'vehicle_model'            => ['required', 'string', 'max:100'],
-            'origin_country_id'        => ['required', 'exists:countries,id'],
-            'origin_province_id'       => ['required', 'exists:provinces,id'],
-            'origin_city'              => ['required', 'string', 'max:100'],
-            'destination_country_id'   => ['required', 'exists:countries,id'],
-            'destination_province_id'  => ['required', 'exists:provinces,id'],
-            'destination_city'         => ['required', 'string', 'max:100'],
-            'requested_date'           => ['required', 'date', 'after_or_equal:today'],
+            'first_name'              => ['required', 'string', 'max:100'],
+            'last_name'               => ['required', 'string', 'max:100'],
+            'email'                   => ['nullable', 'email', 'max:255'],
+            'phone'                   => ['nullable', 'string', 'max:20'],
+            'vehicle_year'            => ['required', 'digits:4', 'integer', 'min:1900', 'max:' . (date('Y') + 2)],
+            'vehicle_make'            => ['required', 'string', 'max:100'],
+            'vehicle_model'           => ['required', 'string', 'max:100'],
+            'origin_country_id'       => ['required', 'exists:countries,id'],
+            'origin_province_id'      => ['required', 'exists:provinces,id'],
+            'origin_city_input'       => ['required', 'string', 'max:100'],
+            'destination_country_id'  => ['required', 'exists:countries,id'],
+            'destination_province_id' => ['required', 'exists:provinces,id'],
+            'destination_city_input'  => ['required', 'string', 'max:100'],
+            'preferred_date'          => ['required', 'date', 'after_or_equal:today'],
         ];
     }
 
@@ -161,19 +272,24 @@ class QuoteRequestForm extends Component
             return;
         }
 
+        $this->quote_number = QuoteRequest::generateQuoteNumber();
+
         QuoteRequest::create([
-            'first_name'              => $this->first_name,
-            'last_name'               => $this->last_name,
-            'email'                   => $this->email ?: null,
-            'phone'                   => $this->phone ?: null,
-            'vehicle_year'            => $this->vehicle_year,
-            'vehicle_make'            => $this->vehicle_make,
-            'vehicle_model'           => $this->vehicle_model,
-            'origin_city'             => $this->origin_city,
-            'origin_province_id'      => $this->origin_province_id,
-            'destination_city'        => $this->destination_city,
-            'destination_province_id' => $this->destination_province_id,
-            'requested_date'          => $this->requested_date,
+            'first_name'                 => $this->first_name,
+            'last_name'                  => $this->last_name,
+            'email'                      => $this->email ?: null,
+            'phone'                      => $this->phone ?: null,
+            'origin_country_id'          => $this->origin_country_id,
+            'origin_province_id'         => $this->origin_province_id,
+            'origin_city_id'             => $this->origin_city_id,
+            'origin_city_custom'         => $this->origin_city_input,
+            'destination_country_id'     => $this->destination_country_id,
+            'destination_province_id'    => $this->destination_province_id,
+            'destination_city_id'        => $this->destination_city_id,
+            'destination_city_custom'    => $this->destination_city_input,
+            'preferred_date'             => $this->preferred_date,
+            'date_type'                  => $this->date_type,
+            'quote_number'               => $this->quote_number,
         ]);
 
         $this->submitted = true;

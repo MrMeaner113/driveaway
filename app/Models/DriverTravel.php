@@ -7,6 +7,52 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $id
+ * @property string $ulid
+ * @property int $work_order_id
+ * @property int $driver_id
+ * @property int $travel_mode_id
+ * @property string $travel_direction
+ * @property string $departure_city
+ * @property string $arrival_city
+ * @property \Carbon\CarbonImmutable|null $departure_at
+ * @property \Carbon\CarbonImmutable|null $arrival_at
+ * @property int $cost_cents
+ * @property string|null $booking_reference
+ * @property string|null $notes
+ * @property string $status
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property \Carbon\CarbonImmutable|null $deleted_at
+ * @property-read \App\Models\Driver|null $driver
+ * @property-read \App\Models\TravelMode $travelMode
+ * @property-read \App\Models\WorkOrder|null $workOrder
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereArrivalAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereArrivalCity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereBookingReference($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereCostCents($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereDepartureAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereDepartureCity($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereDriverId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereTravelDirection($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereTravelModeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereUlid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel whereWorkOrderId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|DriverTravel withoutTrashed()
+ * @mixin \Eloquent
+ */
 class DriverTravel extends Model
 {
     use SoftDeletes;

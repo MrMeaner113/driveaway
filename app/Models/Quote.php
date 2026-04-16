@@ -8,6 +8,94 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+/**
+ * @property int $id
+ * @property string $quote_number
+ * @property int $contact_id
+ * @property int|null $organization_id
+ * @property int $quote_status_id
+ * @property int $origin_city_id
+ * @property int $origin_province_id
+ * @property int $destination_city_id
+ * @property int $destination_province_id
+ * @property int $rate_type_id
+ * @property int $distance_unit_id
+ * @property int $estimated_distance
+ * @property int $rate_per_unit
+ * @property int $estimated_fuel
+ * @property int $estimated_accommodations
+ * @property int $estimated_add_ons
+ * @property int $subtotal
+ * @property int $tax_amount
+ * @property int $total
+ * @property string|null $notes
+ * @property \Carbon\CarbonImmutable|null $expires_at
+ * @property int $created_by
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property \Carbon\CarbonImmutable|null $deleted_at
+ * @property int|null $trip_plan_id
+ * @property int|null $vehicle_category_id
+ * @property string|null $discount_type
+ * @property int|null $discount_value
+ * @property int|null $discount_reason_id
+ * @property int $discount_amount_cents
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AddOnService> $addOnServices
+ * @property-read int|null $add_on_services_count
+ * @property-read \App\Models\Contact|null $contact
+ * @property-read \App\Models\User|null $createdBy
+ * @property-read \App\Models\City|null $destinationCity
+ * @property-read \App\Models\Province|null $destinationProvince
+ * @property-read \App\Models\DiscountReason|null $discountReason
+ * @property-read \App\Models\DistanceUnit|null $distanceUnit
+ * @property-read string $discount_formatted
+ * @property-read \App\Models\Organization|null $organization
+ * @property-read \App\Models\City|null $originCity
+ * @property-read \App\Models\Province|null $originProvince
+ * @property-read \App\Models\RateType|null $rateType
+ * @property-read \App\Models\QuoteStatus|null $status
+ * @property-read \App\Models\TripPlan|null $tripPlan
+ * @property-read \App\Models\VehicleCategory|null $vehicleCategory
+ * @property-read \App\Models\WorkOrder|null $workOrder
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereContactId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereCreatedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereDeletedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereDestinationCityId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereDestinationProvinceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereDiscountAmountCents($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereDiscountReasonId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereDiscountType($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereDiscountValue($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereDistanceUnitId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereEstimatedAccommodations($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereEstimatedAddOns($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereEstimatedDistance($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereEstimatedFuel($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereExpiresAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereOrganizationId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereOriginCityId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereOriginProvinceId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereQuoteNumber($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereQuoteStatusId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereRatePerUnit($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereRateTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereSubtotal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereTaxAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereTotal($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereTripPlanId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote whereVehicleCategoryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote withTrashed(bool $withTrashed = true)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Quote withoutTrashed()
+ * @mixin \Eloquent
+ */
 class Quote extends Model
 {
     use SoftDeletes;

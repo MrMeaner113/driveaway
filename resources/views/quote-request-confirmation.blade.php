@@ -27,10 +27,21 @@
         <p class="text-lg text-gray-600 mb-2">
             Thank you for contacting Drive-Away.ca.
         </p>
-        <p class="text-gray-500 mb-10">
+        <p class="text-gray-500 mb-6">
             Our team will review your request and get back to you as soon as possible.
             Please check your email (or phone) for updates.
         </p>
+
+        @if (session('quote_number'))
+            <div class="inline-block bg-gray-50 border border-gray-200 rounded-lg px-6 py-4 mb-10">
+                <p class="text-lg font-bold text-gray-900">
+                    Your quote reference: <span class="text-red-600">{{ session('quote_number') }}</span>
+                </p>
+                <p class="text-sm text-gray-500 mt-1">Please keep this number for your records.</p>
+            </div>
+        @else
+            <div class="mb-10"></div>
+        @endif
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
             <a href="/" class="btn-brand px-8 py-3 text-base">

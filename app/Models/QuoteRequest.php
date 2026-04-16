@@ -11,6 +11,105 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
+/**
+ * @property int $id
+ * @property string $ulid
+ * @property string $first_name
+ * @property string $last_name
+ * @property string|null $email
+ * @property string|null $phone
+ * @property int $origin_country_id
+ * @property int|null $origin_province_id
+ * @property int|null $origin_city_id
+ * @property int $destination_country_id
+ * @property int|null $destination_province_id
+ * @property int|null $destination_city_id
+ * @property \Carbon\CarbonImmutable|null $preferred_date
+ * @property string|null $notes
+ * @property string $status
+ * @property \Carbon\CarbonImmutable|null $reviewed_at
+ * @property \Carbon\CarbonImmutable|null $quoted_at
+ * @property \Carbon\CarbonImmutable|null $accepted_at
+ * @property \Carbon\CarbonImmutable|null $rejected_at
+ * @property \Carbon\CarbonImmutable|null $expired_at
+ * @property int|null $reviewed_by
+ * @property int|null $quoted_by
+ * @property \Carbon\CarbonImmutable|null $created_at
+ * @property \Carbon\CarbonImmutable|null $updated_at
+ * @property \Carbon\CarbonImmutable|null $deleted_at
+ * @property string|null $origin_province_custom
+ * @property string|null $origin_city_custom
+ * @property string|null $destination_province_custom
+ * @property string|null $destination_city_custom
+ * @property string|null $rejected_reason
+ * @property int|null $vehicle_category_id
+ * @property string|null $notes_internal
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AddOnService> $addOnServices
+ * @property-read int|null $add_on_services_count
+ * @property-read \App\Models\City|null $destinationCity
+ * @property-read \App\Models\Country|null $destinationCountry
+ * @property-read \App\Models\Province|null $destinationProvince
+ * @property-read string $destination_city_display
+ * @property-read string $destination_province_display
+ * @property-read string $full_name
+ * @property-read string $origin_city_display
+ * @property-read string $origin_province_display
+ * @property-read \App\Models\City|null $originCity
+ * @property-read \App\Models\Country|null $originCountry
+ * @property-read \App\Models\Province|null $originProvince
+ * @property-read \App\Models\User|null $quotedBy
+ * @property-read \App\Models\User|null $reviewedBy
+ * @property-read \App\Models\TripPlan|null $tripPlan
+ * @property-read \App\Models\VehicleCategory|null $vehicleCategory
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\QuoteRequestVehicle> $vehicles
+ * @property-read int|null $vehicles_count
+ * @method static Builder<static>|QuoteRequest accepted()
+ * @method static Builder<static>|QuoteRequest new()
+ * @method static Builder<static>|QuoteRequest newModelQuery()
+ * @method static Builder<static>|QuoteRequest newQuery()
+ * @method static Builder<static>|QuoteRequest onlyTrashed()
+ * @method static Builder<static>|QuoteRequest pending()
+ * @method static Builder<static>|QuoteRequest query()
+ * @method static Builder<static>|QuoteRequest quoted()
+ * @method static Builder<static>|QuoteRequest rejected()
+ * @method static Builder<static>|QuoteRequest reviewed()
+ * @method static Builder<static>|QuoteRequest whereAcceptedAt($value)
+ * @method static Builder<static>|QuoteRequest whereCreatedAt($value)
+ * @method static Builder<static>|QuoteRequest whereDeletedAt($value)
+ * @method static Builder<static>|QuoteRequest whereDestinationCityCustom($value)
+ * @method static Builder<static>|QuoteRequest whereDestinationCityId($value)
+ * @method static Builder<static>|QuoteRequest whereDestinationCountryId($value)
+ * @method static Builder<static>|QuoteRequest whereDestinationProvinceCustom($value)
+ * @method static Builder<static>|QuoteRequest whereDestinationProvinceId($value)
+ * @method static Builder<static>|QuoteRequest whereEmail($value)
+ * @method static Builder<static>|QuoteRequest whereExpiredAt($value)
+ * @method static Builder<static>|QuoteRequest whereFirstName($value)
+ * @method static Builder<static>|QuoteRequest whereId($value)
+ * @method static Builder<static>|QuoteRequest whereLastName($value)
+ * @method static Builder<static>|QuoteRequest whereNotes($value)
+ * @method static Builder<static>|QuoteRequest whereNotesInternal($value)
+ * @method static Builder<static>|QuoteRequest whereOriginCityCustom($value)
+ * @method static Builder<static>|QuoteRequest whereOriginCityId($value)
+ * @method static Builder<static>|QuoteRequest whereOriginCountryId($value)
+ * @method static Builder<static>|QuoteRequest whereOriginProvinceCustom($value)
+ * @method static Builder<static>|QuoteRequest whereOriginProvinceId($value)
+ * @method static Builder<static>|QuoteRequest wherePhone($value)
+ * @method static Builder<static>|QuoteRequest wherePreferredDate($value)
+ * @method static Builder<static>|QuoteRequest whereQuotedAt($value)
+ * @method static Builder<static>|QuoteRequest whereQuotedBy($value)
+ * @method static Builder<static>|QuoteRequest whereRejectedAt($value)
+ * @method static Builder<static>|QuoteRequest whereRejectedReason($value)
+ * @method static Builder<static>|QuoteRequest whereReviewedAt($value)
+ * @method static Builder<static>|QuoteRequest whereReviewedBy($value)
+ * @method static Builder<static>|QuoteRequest whereStatus($value)
+ * @method static Builder<static>|QuoteRequest whereUlid($value)
+ * @method static Builder<static>|QuoteRequest whereUpdatedAt($value)
+ * @method static Builder<static>|QuoteRequest whereVehicleCategoryId($value)
+ * @method static Builder<static>|QuoteRequest withTrashed(bool $withTrashed = true)
+ * @method static Builder<static>|QuoteRequest withUnresolvedFields()
+ * @method static Builder<static>|QuoteRequest withoutTrashed()
+ * @mixin \Eloquent
+ */
 class QuoteRequest extends Model
 {
     use SoftDeletes;
@@ -32,6 +131,8 @@ class QuoteRequest extends Model
         'destination_city_id',
         'destination_city_custom',
         'preferred_date',
+        'date_type',
+        'quote_number',
         'notes',
         'rejected_reason',
         'status',
@@ -213,6 +314,14 @@ class QuoteRequest extends Model
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
+
+    public static function generateQuoteNumber(): string
+    {
+        $date  = now()->format('myd');
+        $count = static::whereDate('created_at', today())->count() + 1;
+
+        return $date . '-' . $count;
+    }
 
     public function isTerminal(): bool
     {

@@ -46,15 +46,27 @@ class TripPlanForm
                         ->schema([
                             TextEntry::make('origin_display')
                                 ->label('Origin')
-                                ->getStateUsing(fn ($record) => $record?->quoteRequest
-                                    ? $record->quoteRequest->origin_city_display . ', ' . $record->quoteRequest->origin_province_display
-                                    : '—')
+                                ->getStateUsing(function ($record) {
+                                    $qr = $record?->quoteRequest
+                                        ?? (request('quote_request_id')
+                                            ? \App\Models\QuoteRequest::find((int) request('quote_request_id'))
+                                            : null);
+                                    return $qr
+                                        ? $qr->origin_city_display . ', ' . $qr->origin_province_display
+                                        : '—';
+                                })
                                 ->dehydrated(false),
                             TextEntry::make('destination_display')
                                 ->label('Destination')
-                                ->getStateUsing(fn ($record) => $record?->quoteRequest
-                                    ? $record->quoteRequest->destination_city_display . ', ' . $record->quoteRequest->destination_province_display
-                                    : '—')
+                            ->getStateUsing(function ($record) {
+                                $qr = $record?->quoteRequest
+                                    ?? (request('quote_request_id')
+                                        ? \App\Models\QuoteRequest::find((int) request('quote_request_id'))
+                                        : null);
+                                return $qr
+                                    ? $qr->destination_city_display . ', ' . $qr->destination_province_display
+                                    : '—';
+                            })
                                 ->dehydrated(false),
                         ]),
                 ]),
@@ -355,8 +367,22 @@ class TripPlanForm
                             $code = $qr?->destinationProvince?->code;
                             return $code ? self::federalTaxRateForProvinceCode($code) : '0.1300';
                         })
-                        ->formatStateUsing(fn ($state) => $state ? number_format((float) $state, 4) : '0.1300'),
-                    Textarea::make('notes')
+                        ->formatStateUsing(function ($state, $record) {
+                            if (! $state) return '0.1300';
+                            $pct = number_format((float)$state * 100, 0);
+                            $type = in_array((float)$state, [0.13, 0.14, 0.15]) ? 'HST' : 'GST';
+                            
+                            // Get province code from record or URL param
+                            $qr = $record?->quoteRequest
+                                ?? (request('quote_request_id') 
+                                    ? \App\Models\QuoteRequest::find((int)request('quote_request_id')) 
+                                    : null);
+                            $code = $qr?->destinationProvince?->code ?? '';
+                            
+                            return $code 
+                                ? "{$code} — {$pct}% {$type}"
+                                : "{$pct}% {$type}";
+                        })
                         ->label('Notes')
                         ->nullable()
                         ->columnSpanFull(),

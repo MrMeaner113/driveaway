@@ -21,6 +21,12 @@
             <p class="text-muted" style="max-width:440px; margin:0 auto;">
                 Thanks, {{ $first_name }}! We've received your request and will be in touch shortly with your quote.
             </p>
+            <p style="font-size:1.125rem; font-weight:700; color:var(--text-primary); margin-top:1rem;">
+                Your quote reference number: <span style="color:var(--brand-red);">{{ $quote_number }}</span>
+            </p>
+            <p style="font-size:0.875rem; color:var(--text-muted);">
+                Please keep this number for your records.
+            </p>
         </div>
 
     {{-- ══════════════════════════════════════════════════════════════ --}}
@@ -56,10 +62,11 @@
                         @error('email') <p style="{{ $err }}">{{ $message }}</p> @enderror
                     </div>
 
-                    {{-- Phone — formatted 000-000-0000 via Alpine --}}
+                    {{-- Phone — formatted 000-000-0000 via Alpine, +1 prefix --}}
                     <div>
                         <label style="{{ $label }}">Phone Number</label>
-                        <div x-data>
+                        <div x-data style="display:flex; align-items:stretch;">
+                            <span style="padding:0.625rem 0.75rem; background:var(--bg-soft); border:1px solid var(--border-light); border-right:none; border-radius:6px 0 0 6px; font-size:0.9375rem; font-weight:600; color:var(--text-muted); white-space:nowrap;">+1</span>
                             <input
                                 type="tel"
                                 x-bind:value="$wire.phone"
@@ -74,7 +81,7 @@
                                     $wire.phone = f;
                                 "
                                 placeholder="000-000-0000"
-                                style="{{ $inp }}"
+                                style="{{ $inp }} border-radius:0 6px 6px 0;"
                                 onfocus="this.style.borderColor='var(--brand-red)'"
                                 onblur="this.style.borderColor='var(--border-light)'"
                             >
@@ -187,7 +194,7 @@
                         {{-- Province / State --}}
                         <div style="margin-bottom:0.75rem;">
                             <label style="{{ $label }}">Province / State <span style="color:var(--brand-red)">*</span></label>
-                            <select wire:model="origin_province_id" style="{{ $inp }}" {!! $focusStyle !!} @disabled(!$origin_country_id)>
+                            <select wire:model.live="origin_province_id" style="{{ $inp }}" {!! $focusStyle !!} @disabled(!$origin_country_id)>
                                 <option value="">{{ $origin_country_id ? 'Select province / state…' : 'Select a country first' }}</option>
                                 @foreach($originProvinces as $province)
                                     <option value="{{ $province->id }}">{{ $province->name }}</option>
@@ -199,8 +206,33 @@
                         {{-- City --}}
                         <div>
                             <label style="{{ $label }}">City <span style="color:var(--brand-red)">*</span></label>
-                            <input wire:model="origin_city" type="text" placeholder="Calgary" style="{{ $inp }}" {!! $focusStyle !!}>
-                            @error('origin_city') <p style="{{ $err }}">{{ $message }}</p> @enderror
+                            <div x-data style="position:relative;">
+                                <input
+                                    wire:model.live.debounce.300ms="origin_city_input"
+                                    x-on:blur="setTimeout(() => $wire.clearOriginCitySuggestions(), 200)"
+                                    type="text"
+                                    placeholder="{{ $origin_province_id ? 'Type to search cities…' : 'Select a province first' }}"
+                                    style="{{ $inp }}"
+                                    onfocus="this.style.borderColor='var(--brand-red)'"
+                                    onblur="this.style.borderColor='var(--border-light)'"
+                                    autocomplete="off"
+                                    @disabled(!$origin_province_id)
+                                >
+                                @if(count($origin_city_suggestions) > 0)
+                                    <ul style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid var(--border-light); border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:100; margin-top:3px; padding:4px 0; list-style:none; max-height:200px; overflow-y:auto;">
+                                        @foreach($origin_city_suggestions as $s)
+                                            <li
+                                                wire:click="selectOriginCity({{ $s['id'] }}, '{{ addslashes($s['name']) }}')"
+                                                x-on:mouseover="$el.style.background='var(--bg-soft)'"
+                                                x-on:mouseout="$el.style.background=''"
+                                                style="padding:0.5rem 0.875rem; cursor:pointer; font-size:0.9375rem;"
+                                            >{{ $s['name'] }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                            <p style="font-size:0.8125rem; color:var(--text-muted); margin-top:0.25rem;">Can't find your city? Type it in — we'll confirm it.</p>
+                            @error('origin_city_input') <p style="{{ $err }}">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
@@ -223,7 +255,7 @@
                         {{-- Province / State --}}
                         <div style="margin-bottom:0.75rem;">
                             <label style="{{ $label }}">Province / State <span style="color:var(--brand-red)">*</span></label>
-                            <select wire:model="destination_province_id" style="{{ $inp }}" {!! $focusStyle !!} @disabled(!$destination_country_id)>
+                            <select wire:model.live="destination_province_id" style="{{ $inp }}" {!! $focusStyle !!} @disabled(!$destination_country_id)>
                                 <option value="">{{ $destination_country_id ? 'Select province / state…' : 'Select a country first' }}</option>
                                 @foreach($destinationProvinces as $province)
                                     <option value="{{ $province->id }}">{{ $province->name }}</option>
@@ -235,8 +267,33 @@
                         {{-- City --}}
                         <div>
                             <label style="{{ $label }}">City <span style="color:var(--brand-red)">*</span></label>
-                            <input wire:model="destination_city" type="text" placeholder="Toronto" style="{{ $inp }}" {!! $focusStyle !!}>
-                            @error('destination_city') <p style="{{ $err }}">{{ $message }}</p> @enderror
+                            <div x-data style="position:relative;">
+                                <input
+                                    wire:model.live.debounce.300ms="destination_city_input"
+                                    x-on:blur="setTimeout(() => $wire.clearDestinationCitySuggestions(), 200)"
+                                    type="text"
+                                    placeholder="{{ $destination_province_id ? 'Type to search cities…' : 'Select a province first' }}"
+                                    style="{{ $inp }}"
+                                    onfocus="this.style.borderColor='var(--brand-red)'"
+                                    onblur="this.style.borderColor='var(--border-light)'"
+                                    autocomplete="off"
+                                    @disabled(!$destination_province_id)
+                                >
+                                @if(count($destination_city_suggestions) > 0)
+                                    <ul style="position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid var(--border-light); border-radius:6px; box-shadow:0 4px 12px rgba(0,0,0,0.08); z-index:100; margin-top:3px; padding:4px 0; list-style:none; max-height:200px; overflow-y:auto;">
+                                        @foreach($destination_city_suggestions as $s)
+                                            <li
+                                                wire:click="selectDestinationCity({{ $s['id'] }}, '{{ addslashes($s['name']) }}')"
+                                                x-on:mouseover="$el.style.background='var(--bg-soft)'"
+                                                x-on:mouseout="$el.style.background=''"
+                                                style="padding:0.5rem 0.875rem; cursor:pointer; font-size:0.9375rem;"
+                                            >{{ $s['name'] }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
+                            </div>
+                            <p style="font-size:0.8125rem; color:var(--text-muted); margin-top:0.25rem;">Can't find your city? Type it in — we'll confirm it.</p>
+                            @error('destination_city_input') <p style="{{ $err }}">{{ $message }}</p> @enderror
                         </div>
                     </div>
 
@@ -246,10 +303,31 @@
             {{-- ── Pickup / Delivery Date ────────────────────────────────── --}}
             <div style="margin-bottom:2rem;">
                 <h3 style="{{ $sectionHead }}">Pickup / Delivery Date</h3>
+
+                <div style="display:flex; gap:1.5rem; margin-bottom:1rem;">
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-size:0.9375rem; font-weight:600;">
+                        <input type="radio" wire:model.live="date_type" value="pickup"
+                               style="width:18px; height:18px; accent-color:var(--brand-red); cursor:pointer;">
+                        Preferred Pickup Date
+                    </label>
+                    <label style="display:flex; align-items:center; gap:0.5rem; cursor:pointer; font-size:0.9375rem; font-weight:600;">
+                        <input type="radio" wire:model.live="date_type" value="delivery"
+                               style="width:18px; height:18px; accent-color:var(--brand-red); cursor:pointer;">
+                        Preferred Delivery Date
+                    </label>
+                </div>
+
                 <div style="max-width:260px;">
-                    <label style="{{ $label }}">Preferred Date <span style="color:var(--brand-red)">*</span></label>
-                    <input wire:model="requested_date" type="date" min="{{ date('Y-m-d') }}" style="{{ $inp }}" {!! $focusStyle !!}>
-                    @error('requested_date') <p style="{{ $err }}">{{ $message }}</p> @enderror
+                    <label style="{{ $label }}">
+                        @if($date_type === 'pickup')
+                            When should we pick up your vehicle?
+                        @else
+                            When do you need your vehicle delivered?
+                        @endif
+                        <span style="color:var(--brand-red)">*</span>
+                    </label>
+                    <input wire:model="preferred_date" type="date" min="{{ date('Y-m-d') }}" style="{{ $inp }}" {!! $focusStyle !!}>
+                    @error('preferred_date') <p style="{{ $err }}">{{ $message }}</p> @enderror
                 </div>
             </div>
 
