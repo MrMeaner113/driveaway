@@ -154,7 +154,7 @@ class TripPlanForm
                         ->options(function () {
                             static $fuelOptions = null;
                             $fuelOptions ??= FuelType::where('is_active', true)
-                                ->orderBy('name')
+                                ->orderBy('sort_order')
                                 ->pluck('name', 'id')
                                 ->toArray();
                             return $fuelOptions;

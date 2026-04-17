@@ -66,7 +66,7 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
                         <input type="email" name="email" value="{{ old('email') }}"
                             @class(['w-full px-3 py-2 rounded-lg shadow-sm focus:ring-red-500 focus:border-red-500 text-sm', 'border-2 border-red-500' => $errors->has('email'), 'border border-gray-300' => !$errors->has('email')])>
-                        <p class="mt-1 text-xs text-gray-500">At least one of email or phone required.</p>
+                        <p class="mt-1 text-xs text-gray-200">At least one of email or phone required.</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
@@ -311,6 +311,35 @@
                     </div>
                 </div>
             </div>
+						
+						{{-- ── Preferred Date ────────────────────────────────────────── --}}
+						<div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
+                <h2 class="text-lg font-semibold text-gray-900 mb-4">Preferred Date</h2>
+								<div>
+										<div class="flex gap-6 mb-3">
+												<label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700">
+														<input type="radio" @click="dateType = 'pickup'" :checked="dateType === 'pickup'"
+																class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500 cursor-pointer"
+																style="accent-color: #dc2626;">
+														Preferred Pickup Date
+												</label>
+												<label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700">
+														<input type="radio" @click="dateType = 'delivery'" :checked="dateType === 'delivery'"
+																class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500 cursor-pointer"
+																style="accent-color: #dc2626;">
+														Preferred Delivery Date
+												</label>
+										</div>
+										<input type="hidden" name="date_type" :value="dateType">
+										<label class="block text-sm font-medium text-gray-700 mb-1">
+												<span x-text="dateType === 'pickup' ? 'When should we pick up your vehicle?' : 'When do you need it delivered?'"></span>
+										</label>
+										<input type="date" name="preferred_date" value="{{ old('preferred_date') }}"
+												min="{{ now()->addDay()->toDateString() }}"
+												class="w-full sm:w-48 rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm">
+										<p class="mt-1 text-xs text-gray-500">Optional. Subject to availability.</p>
+								</div>
+						</div>
 
             {{-- ── Add-on Services ────────────────────────────────────────── --}}
             @if ($addOnServices->isNotEmpty())
@@ -336,38 +365,14 @@
             </div>
             @endif
 
-            {{-- ── Notes & Preferred Date ─────────────────────────────────── --}}
+            {{-- ── Client Note ─────────────────────────────────── --}}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-8">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Additional Details</h2>
                 <div class="space-y-4">
                     <div>
-                        <div class="flex gap-6 mb-3">
-                            <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700">
-                                <input type="radio" @click="dateType = 'pickup'" :checked="dateType === 'pickup'"
-                                    class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500 cursor-pointer"
-                                    style="accent-color: #dc2626;">
-                                Preferred Pickup Date
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-gray-700">
-                                <input type="radio" @click="dateType = 'delivery'" :checked="dateType === 'delivery'"
-                                    class="w-4 h-4 text-red-600 border-gray-300 focus:ring-red-500 cursor-pointer"
-                                    style="accent-color: #dc2626;">
-                                Preferred Delivery Date
-                            </label>
-                        </div>
-                        <input type="hidden" name="date_type" :value="dateType">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">
-                            <span x-text="dateType === 'pickup' ? 'When should we pick up your vehicle?' : 'When do you need it delivered?'"></span>
-                        </label>
-                        <input type="date" name="preferred_date" value="{{ old('preferred_date') }}"
-                            min="{{ now()->addDay()->toDateString() }}"
-                            class="w-full sm:w-48 rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm">
-                        <p class="mt-1 text-xs text-gray-500">Optional. Subject to availability.</p>
-                    </div>
-                    <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Additional Notes</label>
                         <textarea name="notes" rows="4" maxlength="2000"
-                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
+                            class="w-full rounded-lg border border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
                             placeholder="Any special instructions, conditions, or information we should know...">{{ old('notes') }}</textarea>
                     </div>
                 </div>

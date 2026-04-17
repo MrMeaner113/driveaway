@@ -325,6 +325,25 @@
     }
 }
 
+/* ===========================================================
+FORM INPUT BORDERS
+============================================================== */
+.form-input-brand {
+    border: 1px solid #006A44;
+    border-radius: 0.5rem;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.form-input-brand:focus {
+    outline: none;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2);
+}
+
+
 /* ============================================================
    CUSTOM TAILWIND UTILITIES
    ============================================================ */
