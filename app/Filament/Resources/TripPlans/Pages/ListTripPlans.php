@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TripPlans\Pages;
 
 use App\Filament\Resources\TripPlans\TripPlanResource;
+use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListTripPlans extends ListRecords
@@ -11,6 +12,8 @@ class ListTripPlans extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [];
+        return [
+            CreateAction::make(),
+        ];
     }
 }

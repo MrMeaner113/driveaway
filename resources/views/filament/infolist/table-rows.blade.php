@@ -1,6 +1,6 @@
 <div style="margin-bottom: 1.5rem;">
     @if($heading ?? null)
-        <h3 style="font-size: 1.0 rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">{{ $heading }}</h3>
+        <h3 style="font-size: 1.0rem; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">{{ $heading }}</h3>
     @endif
     <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
         @foreach($rows as $i => [$label, $value])

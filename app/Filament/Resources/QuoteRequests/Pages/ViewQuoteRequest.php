@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\QuoteRequests\Pages;
 
 use App\Filament\Resources\QuoteRequests\QuoteRequestResource;
-use App\Filament\Resources\QuoteRequests\Schemas\QuoteRequestInfolist;
 use App\Filament\Resources\TripPlans\TripPlanResource;
 use App\Models\City;
 use App\Models\Province;
@@ -17,8 +16,10 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ViewRecord;
+use Filament\Schemas\Schema;
 
 class ViewQuoteRequest extends ViewRecord
 {
@@ -28,12 +29,173 @@ class ViewQuoteRequest extends ViewRecord
 
     private static function statusColor(string $status): string
     {
-        return QuoteRequestInfolist::statusColor($status);
+        return match ($status) {
+            'new'         => 'warning',
+            'in_progress' => 'info',
+            'on_hold'     => 'gray',
+            'sent'        => 'primary',
+            'accepted'    => 'success',
+            'rejected'    => 'danger',
+            'cancelled'   => 'danger',
+            'expired'     => 'gray',
+            'converted'   => 'success',
+            default       => 'gray',
+        };
     }
 
     private static function statusLabel(string $status): string
     {
-        return QuoteRequestInfolist::statusLabel($status);
+        return match ($status) {
+            'new'         => 'New',
+            'in_progress' => 'In Progress',
+            'on_hold'     => 'On Hold',
+            'sent'        => 'Sent',
+            'accepted'    => 'Accepted',
+            'rejected'    => 'Rejected',
+            'cancelled'   => 'Cancelled',
+            'expired'     => 'Expired',
+            'converted'   => 'Converted',
+            default       => ucfirst(str_replace('_', ' ', $status)),
+        };
+    }
+
+    // ── Infolist ─────────────────────────────────────────────────────────────
+
+    public function infolist(Schema $schema): Schema
+    {
+        return $schema->components([
+
+            TextEntry::make('quote_header')
+                ->Label('')
+                ->html()
+                ->columnSpanFull()
+                ->dehydrated(false)
+                ->getStateUsing(fn($record) => view('filament.infolist.quote-header', ['record' => $record])->render()),
+
+            // Section 1: Contact Information
+            TextEntry::make('contact_information')
+                ->hiddenLabel()
+                ->html()
+                ->columnSpanFull()
+                ->dehydrated(false)
+                ->getStateUsing(function ($record) {
+                    $rows = [
+                        ['First Name', e($record->first_name ?? '—')],
+                        ['Last Name', e($record->last_name ?? '—')],
+                        ['Email', e($record->email ?? '—')],
+                        ['Phone', e($record->phone ?? '—')],
+                        ['Preferred Date', $record->preferred_date ? $record->preferred_date->format('F j, Y') : '—'],
+                        ['Date Type', match ($record->date_type ?? '') {
+                            'delivery' => 'Delivery',
+                            default => 'Pickup'
+                        }],
+                    ];
+                    return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Contact Information'])->render();
+                }),
+
+            // Section 2: Vehicle Information
+            TextEntry::make('vehicles_info')
+                ->hiddenLabel()
+                ->html()
+                ->columnSpanFull()
+                ->dehydrated(false)
+                ->getStateUsing(function ($record) {
+                    $html = '';
+                    foreach ($record->vehicles as $i => $vehicle) {
+                        $rows = [
+                            ['Year', e($vehicle->vehicle_year ?? '—')],
+                            ['Make', e($vehicle->vehicle_make_display ?: '—')],
+                            ['Model', e($vehicle->vehicle_model_display ?: '—')],
+                        ];
+                        $html .= view('filament.infolist.table-rows', [
+                            'rows'    => $rows,
+                            'heading' => 'Vehicle ' . ($i + 1),
+                        ])->render();
+                    }
+                    return $html;
+                }),
+
+            // Section 3: Origin
+            TextEntry::make('origin_info')
+                ->hiddenLabel()
+                ->html()
+                ->columnSpanFull()
+                ->dehydrated(false)
+                ->getStateUsing(function ($record) {
+                    $rows = [
+                        ['Country', e($record->originCountry?->name ?? '—')],
+                        ['Province', e($record->origin_province_display ?: '—')],
+                        ['City', e($record->origin_city_display ?: '—')],
+                    ];
+                    return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Origin'])->render();
+                }),
+
+            // Section 4: Destination
+            TextEntry::make('destination_info')
+                ->hiddenLabel()
+                ->html()
+                ->columnSpanFull()
+                ->dehydrated(false)
+                ->getStateUsing(function ($record) {
+                    $rows = [
+                        ['Country', e($record->destinationCountry?->name ?? '—')],
+                        ['Province', e($record->destination_province_display ?: '—')],
+                        ['City', e($record->destination_city_display ?: '—')],
+                    ];
+                    return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Destination'])->render();
+                }),
+
+            // Section 5: Add-on Services
+            TextEntry::make('addons_info')
+                ->hiddenLabel()
+                ->html()
+                ->columnSpanFull()
+                ->dehydrated(false)
+                ->getStateUsing(function ($record) {
+                    $services = $record->addOnServices;
+                    $rows = $services->isEmpty()
+                        ? [['Services', 'None selected']]
+                        : $services->values()->map(fn($s, $i) => ['#' . ($i + 1), e($s->name)])->toArray();
+                    return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Add-on Services'])->render();
+                }),
+
+            // Section 6: Notes (only if not empty)
+            TextEntry::make('notes_info')
+                ->hiddenLabel()
+                ->html()
+                ->columnSpanFull()
+                ->dehydrated(false)
+                ->getStateUsing(function ($record) {
+                    if (blank($record->notes)) {
+                        return '';
+                    }
+                    return view('filament.infolist.table-rows', [
+                        'rows'    => [['Notes', nl2br(e($record->notes))]],
+                        'heading' => 'Notes',
+                    ])->render();
+                }),
+
+            // Section 7: Workflow
+            TextEntry::make('workflow_info')
+                ->hiddenLabel()
+                ->html()
+                ->columnSpanFull()
+                ->dehydrated(false)
+                ->getStateUsing(function ($record) {
+                    $fmt = fn($dt) => $dt ? $dt->format('M j, Y g:i A') : '—';
+                    $rows = [
+                        ['Reviewed By', e($record->reviewedBy?->name ?? '—')],
+                        ['Reviewed On', $fmt($record->reviewed_at)],
+                        ['Quoted By', e($record->quotedBy?->name ?? '—')],
+                        ['Quoted On', $fmt($record->quoted_at)],
+                        ['Accepted On', $fmt($record->accepted_at)],
+                        ['Rejected / Cancelled On', $fmt($record->rejected_at)],
+                        ['Expired On', $fmt($record->expired_at)],
+                        ['Submitted On', $fmt($record->created_at)],
+                    ];
+                    return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Workflow'])->render();
+                }),
+        ]);
     }
 
     // ── Header actions ───────────────────────────────────────────────────────
@@ -56,9 +218,9 @@ class ViewQuoteRequest extends ViewRecord
             ])
                 ->label('Change Status')
                 ->icon('heroicon-o-arrow-path')
-                ->color(fn (): string => static::statusColor($this->record?->status ?? 'new'))
+                ->color(fn(): string => static::statusColor($this->record?->status ?? 'new'))
                 ->button()
-                ->visible(fn (): bool => $this->record && ! $this->record->isTerminal()),
+                ->visible(fn(): bool => $this->record && ! $this->record->isTerminal()),
 
             // ── Create Trip Plan ──────────────────────────────────────────
 
@@ -66,12 +228,13 @@ class ViewQuoteRequest extends ViewRecord
                 ->label('Create Trip Plan')
                 ->icon('heroicon-o-calculator')
                 ->color('primary')
-                ->visible(fn (): bool =>
+                ->visible(
+                    fn(): bool =>
                     $this->record
-                    && ! $this->record->isTerminal()
-                    && ! $this->record->tripPlan()->exists()
+                        && ! $this->record->isTerminal()
+                        && ! $this->record->tripPlan()->exists()
                 )
-                ->url(fn () => TripPlanResource::getUrl('create', [
+                ->url(fn() => TripPlanResource::getUrl('create', [
                     'quote_request_id' => $this->record->id,
                 ])),
 
@@ -83,9 +246,9 @@ class ViewQuoteRequest extends ViewRecord
                 ->label('Add Origin City to Lookup')
                 ->icon('heroicon-o-map-pin')
                 ->color('warning')
-                ->visible(fn () => $this->record && filled($this->record->origin_city_custom) && ! $this->record->origin_city_id)
+                ->visible(fn() => $this->record && filled($this->record->origin_city_custom) && ! $this->record->origin_city_id)
                 ->modalHeading('Add Origin City to Cities Table')
-                ->schema(fn () => [
+                ->schema(fn() => [
                     TextInput::make('name')
                         ->label('City Name')
                         ->default($this->record->origin_city_custom)
@@ -116,9 +279,9 @@ class ViewQuoteRequest extends ViewRecord
                 ->label('Match Origin City')
                 ->icon('heroicon-o-magnifying-glass')
                 ->color('warning')
-                ->visible(fn () => $this->record && filled($this->record->origin_city_custom) && ! $this->record->origin_city_id)
+                ->visible(fn() => $this->record && filled($this->record->origin_city_custom) && ! $this->record->origin_city_id)
                 ->modalHeading('Match Origin City to Existing Record')
-                ->modalDescription(fn () => "Custom value entered: \"{$this->record->origin_city_custom}\"")
+                ->modalDescription(fn() => "Custom value entered: \"{$this->record->origin_city_custom}\"")
                 ->schema([
                     Select::make('city_id')
                         ->label('Select Matching City')
@@ -139,9 +302,9 @@ class ViewQuoteRequest extends ViewRecord
                 ->label('Add Destination City to Lookup')
                 ->icon('heroicon-o-map-pin')
                 ->color('warning')
-                ->visible(fn () => $this->record && filled($this->record->destination_city_custom) && ! $this->record->destination_city_id)
+                ->visible(fn() => $this->record && filled($this->record->destination_city_custom) && ! $this->record->destination_city_id)
                 ->modalHeading('Add Destination City to Cities Table')
-                ->schema(fn () => [
+                ->schema(fn() => [
                     TextInput::make('name')
                         ->label('City Name')
                         ->default($this->record->destination_city_custom)
@@ -172,9 +335,9 @@ class ViewQuoteRequest extends ViewRecord
                 ->label('Match Destination City')
                 ->icon('heroicon-o-magnifying-glass')
                 ->color('warning')
-                ->visible(fn () => $this->record && filled($this->record->destination_city_custom) && ! $this->record->destination_city_id)
+                ->visible(fn() => $this->record && filled($this->record->destination_city_custom) && ! $this->record->destination_city_id)
                 ->modalHeading('Match Destination City to Existing Record')
-                ->modalDescription(fn () => "Custom value entered: \"{$this->record->destination_city_custom}\"")
+                ->modalDescription(fn() => "Custom value entered: \"{$this->record->destination_city_custom}\"")
                 ->schema([
                     Select::make('city_id')
                         ->label('Select Matching City')
@@ -213,8 +376,8 @@ class ViewQuoteRequest extends ViewRecord
             ->color($color)
             ->requiresConfirmation()
             ->modalHeading("Set status to \"{$label}\"")
-            ->modalDescription(fn () => "Current status: " . static::statusLabel($this->record->status))
-            ->visible(fn () => $this->record && $this->record->status !== $status)
+            ->modalDescription(fn() => "Current status: " . static::statusLabel($this->record->status))
+            ->visible(fn() => $this->record && $this->record->status !== $status)
             ->action(function () use ($status) {
                 $payload = ['status' => $status];
 
@@ -252,7 +415,7 @@ class ViewQuoteRequest extends ViewRecord
             ->requiresConfirmation()
             ->modalHeading('Accept Quote Request')
             ->modalDescription('This will create a Contact, Quote, and Work Order from this request. This action cannot be undone.')
-            ->visible(fn () => $this->record && $this->record->status !== 'accepted')
+            ->visible(fn() => $this->record && $this->record->status !== 'accepted')
             ->action(function () {
                 $this->record->update(array_filter([
                     'reviewed_by' => $this->record->reviewed_by ?? auth()->id(),
@@ -298,7 +461,7 @@ class ViewQuoteRequest extends ViewRecord
                     ->label('Reason (optional)')
                     ->maxLength(1000),
             ])
-            ->visible(fn () => $this->record && $this->record->status !== $status)
+            ->visible(fn() => $this->record && $this->record->status !== $status)
             ->action(function (array $data) use ($status, $label) {
                 $this->record->update([
                     'status'          => $status,
@@ -335,7 +498,7 @@ class ViewQuoteRequest extends ViewRecord
                     ->icon('heroicon-o-truck')
                     ->color('warning')
                     ->modalHeading("Add \"{$vehicle->vehicle_make_custom}\" to Vehicle Makes")
-                    ->schema(fn () => [
+                    ->schema(fn() => [
                         TextInput::make('name')
                             ->label('Make Name')
                             ->default($vehicle->vehicle_make_custom)
@@ -381,7 +544,7 @@ class ViewQuoteRequest extends ViewRecord
                     ->icon('heroicon-o-truck')
                     ->color('warning')
                     ->modalHeading("Add \"{$vehicle->vehicle_model_custom}\" to Vehicle Models")
-                    ->schema(fn () => [
+                    ->schema(fn() => [
                         TextInput::make('name')
                             ->label('Model Name')
                             ->default($vehicle->vehicle_model_custom)

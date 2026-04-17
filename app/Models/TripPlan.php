@@ -2,112 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\Attribute;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
 
-/**
- * @property int $id
- * @property string $ulid
- * @property int $quote_request_id
- * @property int $distance_km
- * @property int $detour_buffer_pct
- * @property int $adjusted_distance_km
- * @property int $speed_kmh
- * @property int $drive_hours_per_day
- * @property int $km_per_day
- * @property int $drive_days
- * @property int $delay_days
- * @property int $delay_day_per_km
- * @property int $total_days
- * @property int $hotel_nights
- * @property numeric $fuel_economy_per_100km
- * @property int $avg_fuel_price_cents
- * @property int $fuel_cost_cents
- * @property int $driver_rate_cents_per_km
- * @property int $driver_cost_cents
- * @property int $hotel_rate_cents
- * @property int $hotel_cost_cents
- * @property int $meal_cost_cents
- * @property int $meals_per_day
- * @property int $meal_cost_total_cents
- * @property int|null $insurance_rate_id
- * @property int $insurance_cost_cents
- * @property int|null $transport_plate_rate_id
- * @property int $transport_plate_cost_cents
- * @property int $tolls_and_ferry_cents
- * @property int $subtotal_cents
- * @property numeric $tax_rate
- * @property int $tax_amount_cents
- * @property int $total_cents
- * @property string|null $notes
- * @property int $created_by
- * @property \Carbon\CarbonImmutable|null $created_at
- * @property \Carbon\CarbonImmutable|null $updated_at
- * @property \Carbon\CarbonImmutable|null $deleted_at
- * @property int|null $insurance_cost_override_cents
- * @property int|null $transport_plate_cost_override_cents
- * @property int|null $fuel_type_id
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\AddOnService> $addOnServices
- * @property-read int|null $add_on_services_count
- * @property-read \App\Models\User|null $createdBy
- * @property-read \App\Models\FuelType|null $fuelType
- * @property-read \App\Models\InsuranceRate|null $insuranceRate
- * @property-read \App\Models\QuoteRequest|null $quoteRequest
- * @property-read \App\Models\TransportPlateRate|null $transportPlateRate
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan forQuoteRequest(int $quoteRequestId)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan onlyTrashed()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereAdjustedDistanceKm($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereAvgFuelPriceCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereCreatedBy($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDelayDayPerKm($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDelayDays($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDeletedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDetourBufferPct($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDistanceKm($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDriveDays($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDriveHoursPerDay($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDriverCostCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereDriverRateCentsPerKm($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereFuelCostCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereFuelEconomyPer100km($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereFuelTypeId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereHotelCostCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereHotelNights($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereHotelRateCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereInsuranceCostCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereInsuranceCostOverrideCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereInsuranceRateId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereKmPerDay($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereMealCostCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereMealCostTotalCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereMealsPerDay($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereNotes($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereQuoteRequestId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereSpeedKmh($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereSubtotalCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereTaxAmountCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereTaxRate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereTollsAndFerryCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereTotalCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereTotalDays($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereTransportPlateCostCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereTransportPlateCostOverrideCents($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereTransportPlateRateId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereUlid($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan whereUpdatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan withTrashed(bool $withTrashed = true)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|TripPlan withoutTrashed()
- * @mixin \Eloquent
- */
 class TripPlan extends Model
 {
     use SoftDeletes;
@@ -115,39 +16,59 @@ class TripPlan extends Model
     protected $fillable = [
         'ulid',
         'quote_request_id',
+        'driver_id',
+        'vehicle_id',
+        'origin_contact_id',
+        'destination_contact_id',
+        'pickup_date',
+        'latest_delivery_date',
+        // Route
         'distance_km',
-        'detour_buffer_pct',
+        'detour_pct',
+        'out_of_route_km',
         'adjusted_distance_km',
-        'speed_kmh',
-        'drive_hours_per_day',
-        'km_per_day',
+        // Duration
+        'avg_speed_kph',
+        'drive_hours',
         'drive_days',
-        'delay_days',
-        'delay_day_per_km',
-        'total_days',
-        'hotel_nights',
-        'fuel_economy_per_100km',
-        'avg_fuel_price_cents',
-        'fuel_cost_cents',
-        'driver_rate_cents_per_km',
-        'driver_cost_cents',
-        'hotel_rate_cents',
-        'hotel_cost_cents',
-        'meal_cost_cents',
-        'meals_per_day',
-        'meal_cost_total_cents',
-        'insurance_rate_id',
-        'insurance_cost_override_cents',
-        'insurance_cost_cents',
-        'transport_plate_rate_id',
-        'transport_plate_cost_override_cents',
-        'transport_plate_cost_cents',
+        'drive_days_override',
+        'nights',
+        'ferry_involved',
+        'extended_drive_time',
+        'extended_drive_time_override',
+        // Fuel
         'fuel_type_id',
-        'tolls_and_ferry_cents',
-        'subtotal_cents',
+        'fuel_economy_l100',
+        'estimated_fuel_litres',
+        'fuel_price_per_litre',
+        'fuel_cost',
+        // Driver
+        'rate_type_id',
+        'driver_rate_per_km',
+        'driver_cost',
+        // Accommodations & Meals
+        'hotel_rate',
+        'accommodations_cost',
+        'meal_rate',
+        'meals_per_day',
+        'meals_cost',
+        // Discount
+        'discount_reason_id',
+        'discount_type',
+        'discount_value',
+        'discount_amount',
+        // Currency & Tax
+        'currency',
+        'fx_rate',
+        'tax_type_id',
         'tax_rate',
-        'tax_amount_cents',
-        'total_cents',
+        'cc_rate',
+        // Totals
+        'line_total',
+        'subtotal',
+        'tax_amount',
+        'cc_fee',
+        'total',
         'notes',
         'created_by',
     ];
@@ -155,8 +76,37 @@ class TripPlan extends Model
     protected function casts(): array
     {
         return [
-            'fuel_economy_per_100km' => 'decimal:2',
-            'tax_rate'               => 'decimal:4',
+            'pickup_date'                  => 'date',
+            'latest_delivery_date'         => 'date',
+            'drive_days_override'          => 'boolean',
+            'ferry_involved'               => 'boolean',
+            'extended_drive_time_override' => 'boolean',
+            'distance_km'                  => 'decimal:2',
+            'detour_pct'                   => 'decimal:4',
+            'out_of_route_km'              => 'decimal:2',
+            'adjusted_distance_km'         => 'decimal:2',
+            'avg_speed_kph'                => 'decimal:1',
+            'drive_hours'                  => 'decimal:2',
+            'fuel_economy_l100'            => 'decimal:2',
+            'estimated_fuel_litres'        => 'decimal:2',
+            'fuel_price_per_litre'         => 'decimal:4',
+            'fuel_cost'                    => 'decimal:2',
+            'driver_rate_per_km'           => 'decimal:4',
+            'driver_cost'                  => 'decimal:2',
+            'hotel_rate'                   => 'decimal:2',
+            'accommodations_cost'          => 'decimal:2',
+            'meal_rate'                    => 'decimal:2',
+            'meals_cost'                   => 'decimal:2',
+            'discount_value'               => 'decimal:2',
+            'discount_amount'              => 'decimal:2',
+            'fx_rate'                      => 'decimal:6',
+            'tax_rate'                     => 'decimal:4',
+            'cc_rate'                      => 'decimal:4',
+            'line_total'                   => 'decimal:2',
+            'subtotal'                     => 'decimal:2',
+            'tax_amount'                   => 'decimal:2',
+            'cc_fee'                       => 'decimal:2',
+            'total'                        => 'decimal:2',
         ];
     }
 
@@ -181,14 +131,39 @@ class TripPlan extends Model
         return $this->belongsTo(QuoteRequest::class);
     }
 
-    public function insuranceRate(): BelongsTo
+    public function driver(): BelongsTo
     {
-        return $this->belongsTo(InsuranceRate::class);
+        return $this->belongsTo(Driver::class);
     }
 
-    public function transportPlateRate(): BelongsTo
+    public function vehicle(): BelongsTo
     {
-        return $this->belongsTo(TransportPlateRate::class);
+        return $this->belongsTo(Vehicle::class);
+    }
+
+    public function originContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'origin_contact_id');
+    }
+
+    public function destinationContact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class, 'destination_contact_id');
+    }
+
+    public function taxType(): BelongsTo
+    {
+        return $this->belongsTo(TaxType::class);
+    }
+
+    public function rateType(): BelongsTo
+    {
+        return $this->belongsTo(RateType::class);
+    }
+
+    public function discountReason(): BelongsTo
+    {
+        return $this->belongsTo(DiscountReason::class);
     }
 
     public function fuelType(): BelongsTo
@@ -201,11 +176,14 @@ class TripPlan extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function addOnServices(): BelongsToMany
+    public function tripPlanAddOnServices(): HasMany
     {
-        return $this->belongsToMany(AddOnService::class, 'trip_plan_add_on_services')
-            ->withPivot(['quantity', 'calculated_cost_cents', 'rate_type', 'unit_cost_cents'])
-            ->withTimestamps();
+        return $this->hasMany(TripPlanAddOnService::class)->orderBy('sort_order');
+    }
+
+    public function tripPlanExtraTravel(): HasMany
+    {
+        return $this->hasMany(TripPlanExtraTravel::class)->orderBy('sort_order');
     }
 
     // ── Scopes ───────────────────────────────────────────────────────────────
@@ -215,12 +193,43 @@ class TripPlan extends Model
         return $query->where('quote_request_id', $quoteRequestId);
     }
 
-    // ── Computation ──────────────────────────────────────────────────────────
+    // ── Business Logic ───────────────────────────────────────────────────────
 
     /**
-     * Recompute all derived fields. Called automatically on creating/updating.
-     * May also be called manually after changing add-on services on the pivot.
+     * Tiered detour percentage based on distance_km.
+     * < 1,000 km = 5%  |  1,000–4,499 km = 10%  |  4,500+ km = 15%
      */
+    public function detourPercentage(): float
+    {
+        $km = (float) $this->distance_km;
+        if ($km < 1000) return 0.05;
+        if ($km < 4500) return 0.10;
+        return 0.15;
+    }
+
+    public function discountAmount(): float
+    {
+        return match ($this->discount_type) {
+            'flat'    => (float) ($this->discount_value ?? 0),
+            'percent' => round($this->lineTotal() * (float) ($this->discount_value ?? 0) / 100, 2),
+            default   => 0.0,
+        };
+    }
+
+    public function lineTotal(): float
+    {
+        $direct = (float) $this->fuel_cost
+            + (float) $this->driver_cost
+            + (float) $this->accommodations_cost
+            + (float) $this->meals_cost;
+
+        $addOns      = $this->exists ? (float) $this->tripPlanAddOnServices()->sum('charge') : 0.0;
+        $extraTravel = $this->exists ? (float) $this->tripPlanExtraTravel()->sum('charge') : 0.0;
+
+        return round($direct + $addOns + $extraTravel, 2);
+    }
+
+    /** Recalculate and persist. Call after changing add-on services or extra travel. */
     public function recalculate(): void
     {
         $this->computeFields();
@@ -229,74 +238,75 @@ class TripPlan extends Model
 
     public function computeFields(): void
     {
-        // Distance calculations
-        $this->adjusted_distance_km = floor($this->distance_km * (1 + $this->detour_buffer_pct / 100));
-        
-        // Timing calculations
-        $this->km_per_day = $this->speed_kmh * $this->drive_hours_per_day;
-        
-        if ($this->km_per_day > 0) {
-            $this->drive_days = floor($this->adjusted_distance_km / $this->km_per_day);
-        } else {
-            $this->drive_days = 0;
+        // ── Route ─────────────────────────────────────────────────────────────
+        $this->detour_pct           = $this->detourPercentage();
+        $this->out_of_route_km      = round((float) $this->distance_km * $this->detour_pct, 2);
+        $this->adjusted_distance_km = round((float) $this->distance_km + $this->out_of_route_km, 2);
+
+        // ── Duration ──────────────────────────────────────────────────────────
+        $speed            = (float) ($this->avg_speed_kph ?: 90);
+        $this->drive_hours = round($this->adjusted_distance_km / $speed, 2);
+
+        if (! $this->drive_days_override) {
+            $this->drive_days = (int) floor($this->drive_hours / 12);
         }
-        
-        if ($this->delay_day_per_km > 0) {
-            $this->delay_days = floor($this->adjusted_distance_km / $this->delay_day_per_km);
-        } else {
-            $this->delay_days = 0;
+
+        $this->nights = (int) floor($this->drive_hours / 10);
+
+        if (! $this->extended_drive_time_override) {
+            $this->extended_drive_time = $this->nights + ($this->ferry_involved ? 3 : 2);
         }
-        
-        $this->total_days = $this->drive_days + $this->delay_days;
-        $this->hotel_nights = max(0, $this->drive_days - 1);
-        
-        // Fuel cost
-        $this->fuel_cost_cents = round(($this->adjusted_distance_km / 100) * $this->fuel_economy_per_100km * $this->avg_fuel_price_cents);
-        
-        // Driver cost
-        $this->driver_cost_cents = round($this->adjusted_distance_km * $this->driver_rate_cents_per_km);
-        
-        // Hotel cost (drive days only: nights = drive_days - 1)
-        $this->hotel_cost_cents = $this->hotel_nights * $this->hotel_rate_cents;
-        
-        // Meal cost (drive days only)
-        $this->meal_cost_total_cents = $this->drive_days * $this->meals_per_day * $this->meal_cost_cents;
-        
-        // Insurance cost with override support
-        if ($this->insurance_cost_override_cents !== null && $this->insurance_cost_override_cents > 0) {
-            $this->insurance_cost_cents = $this->insurance_cost_override_cents * $this->total_days;
-        } elseif ($this->insurance_rate_id) {
-            $rate = InsuranceRate::find($this->insurance_rate_id);
-            $this->insurance_cost_cents = $rate ? ($rate->daily_rate * $this->total_days) : 0;
-        } else {
-            $this->insurance_cost_cents = 0;
+
+        if ($this->pickup_date && $this->extended_drive_time > 0) {
+            $this->latest_delivery_date = Carbon::parse($this->pickup_date)
+                ->addDays($this->extended_drive_time)
+                ->toDateString();
         }
-        
-        // Transport plate cost with override support
-        if ($this->transport_plate_cost_override_cents !== null && $this->transport_plate_cost_override_cents > 0) {
-            $this->transport_plate_cost_cents = $this->transport_plate_cost_override_cents * $this->total_days;
-        } elseif ($this->transport_plate_rate_id) {
-            $rate = TransportPlateRate::find($this->transport_plate_rate_id);
-            $this->transport_plate_cost_cents = $rate ? ($rate->daily_rate * $this->total_days) : 0;
-        } else {
-            $this->transport_plate_cost_cents = 0;
-        }
-        
-        // Subtotal (sum of all cost fields; add-ons handled separately via sync)
-        $this->subtotal_cents = 
-            $this->fuel_cost_cents +
-            $this->driver_cost_cents +
-            $this->hotel_cost_cents +
-            $this->meal_cost_total_cents +
-            $this->insurance_cost_cents +
-            $this->transport_plate_cost_cents +
-            $this->tolls_and_ferry_cents;
-        
-        // Tax calculation — tax_rate is a 4-decimal string, e.g. '0.0500'
-        $this->tax_amount_cents = (int) round($this->subtotal_cents * (float) $this->tax_rate);
-        
-        // Total
-        $this->total_cents = $this->subtotal_cents + $this->tax_amount_cents;
+
+        // ── Fuel ──────────────────────────────────────────────────────────────
+        $this->estimated_fuel_litres = round($this->adjusted_distance_km * (float) $this->fuel_economy_l100 / 100, 2);
+        $this->fuel_cost             = round($this->estimated_fuel_litres * (float) $this->fuel_price_per_litre, 2);
+
+        // ── Driver ────────────────────────────────────────────────────────────
+        $this->driver_cost = round($this->adjusted_distance_km * (float) $this->driver_rate_per_km, 2);
+
+        // ── Accommodations & Meals ────────────────────────────────────────────
+        $this->accommodations_cost = round($this->nights * (float) $this->hotel_rate, 2);
+        $this->meals_cost          = round($this->nights * $this->meals_per_day * (float) $this->meal_rate, 2);
+
+        // ── Totals ────────────────────────────────────────────────────────────
+        $direct = $this->fuel_cost + $this->driver_cost + $this->accommodations_cost + $this->meals_cost;
+        $addOns = $this->exists ? (float) $this->tripPlanAddOnServices()->sum('charge') : 0.0;
+        $extra  = $this->exists ? (float) $this->tripPlanExtraTravel()->sum('charge') : 0.0;
+
+        $this->line_total      = round($direct + $addOns + $extra, 2);
+        $this->discount_amount = $this->discountAmount();
+        $this->subtotal        = round($this->line_total - $this->discount_amount, 2);
+        $this->tax_amount      = round($this->subtotal * (float) $this->tax_rate, 2);
+        $this->cc_fee          = round($this->subtotal * (float) $this->cc_rate, 2);
+        $this->total           = round($this->subtotal + $this->tax_amount + $this->cc_fee, 2);
     }
 
+    // ── Display Helpers ──────────────────────────────────────────────────────
+
+    /** Convert a metric value to imperial for display only — never mutates stored values. */
+    public function toImperial(string $field): float
+    {
+        return match ($field) {
+            'distance_km', 'adjusted_distance_km', 'out_of_route_km' => round((float) $this->$field * 0.621371, 2),
+            'avg_speed_kph'      => round((float) $this->avg_speed_kph * 0.621371, 1),
+            'fuel_economy_l100'  => round(235.214 / (float) $this->fuel_economy_l100, 2),
+            'estimated_fuel_litres' => round((float) $this->estimated_fuel_litres / 3.78541, 2),
+            default => (float) $this->$field,
+        };
+    }
+
+    /** Apply FX rate for display — never mutates stored values. */
+    public function toUsd(float $amount): float
+    {
+        if ($this->currency === 'CAD' || ! $this->fx_rate) {
+            return $amount;
+        }
+        return round($amount * (float) $this->fx_rate, 2);
+    }
 }

@@ -6,7 +6,6 @@ use App\Filament\Resources\QuoteRequests\Pages\EditQuoteRequest;
 use App\Filament\Resources\QuoteRequests\Pages\ListQuoteRequests;
 use App\Filament\Resources\QuoteRequests\Pages\ViewQuoteRequest;
 use App\Filament\Resources\QuoteRequests\Schemas\QuoteRequestForm;
-use App\Filament\Resources\QuoteRequests\Schemas\QuoteRequestInfolist;
 use App\Filament\Resources\QuoteRequests\Tables\QuoteRequestsTable;
 use App\Models\QuoteRequest;
 use BackedEnum;
@@ -21,9 +20,15 @@ class QuoteRequestResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInbox;
 
-    public static function getNavigationGroup(): string|\UnitEnum|null { return 'Dispatch'; }
+    public static function getNavigationGroup(): string|\UnitEnum|null
+    {
+        return 'Dispatch';
+    }
 
-    public static function getNavigationSort(): ?int { return 1; }
+    public static function getNavigationSort(): ?int
+    {
+        return 1;
+    }
 
     public static function canViewAny(): bool
     {
@@ -38,11 +43,6 @@ class QuoteRequestResource extends Resource
     public static function form(Schema $schema): Schema
     {
         return QuoteRequestForm::configure($schema);
-    }
-
-    public static function infolist(Schema $schema): Schema
-    {
-        return QuoteRequestInfolist::configure($schema);
     }
 
     public static function table(Table $table): Table
