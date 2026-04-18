@@ -22,7 +22,7 @@ class OrganizationResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;
 
-    public static function getNavigationGroup(): string|\UnitEnum|null { return 'CRM'; }
+    public static function getNavigationGroup(): string|\UnitEnum|null { return 'People'; }
 
     public static function getNavigationSort(): ?int { return 2; }
 

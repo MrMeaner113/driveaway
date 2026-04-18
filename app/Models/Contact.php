@@ -5,7 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\ContactCategory;
 
 /**
  * @property int $id
@@ -72,6 +75,7 @@ class Contact extends Model
         'organization_id',
         'notes',
         'is_active',
+        'staff_position_id',
     ];
 
     protected function casts(): array
@@ -104,5 +108,50 @@ class Contact extends Model
     public function addresses(): HasMany
     {
         return $this->hasMany(Address::class);
+    }
+
+    public function position(): BelongsTo
+    {
+        return $this->belongsTo(StaffPosition::class, 'staff_position_id');
+    }
+
+    public function driverProfile(): HasOne
+    {
+        return $this->hasOne(Driver::class);
+    }
+
+    public function corporateProfile(): HasOne
+    {
+        return $this->hasOne(CorporateDetail::class);
+    }
+
+    public function getFullNameAttribute(): string
+    {
+        if ($this->nickname) {
+            return "{$this->first_name} ({$this->nickname}) {$this->last_name}";
+        }
+        return "{$this->first_name} {$this->last_name}";
+    }
+
+    public function getContactCategoryAttribute(): ?ContactCategory
+    {
+        return $this->contactType?->category;
+    }
+
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    public function scopeOfType(Builder $query, int $typeId): Builder
+    {
+        return $query->where('contact_type_id', $typeId);
+    }
+
+    public function scopeOfCategory(Builder $query, string $categorySlug): Builder
+    {
+        return $query->whereHas('contactType', fn ($q) =>
+            $q->whereHas('category', fn ($q2) => $q2->where('slug', $categorySlug))
+        );
     }
 }

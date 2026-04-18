@@ -106,4 +106,35 @@ class Address extends Model
     {
         return $this->belongsTo(Country::class);
     }
+
+    public function getFormattedAttribute(): string
+    {
+        $parts = array_filter([
+            $this->line1,
+            $this->line2,
+            $this->city?->name,
+            trim(($this->province?->code ?? '') . ' ' . ($this->postal_code ?? '')),
+            $this->country?->name,
+        ]);
+        return implode(', ', $parts);
+    }
+
+    protected static function boot(): void
+    {
+        parent::boot();
+
+        static::saving(function (Address $address) {
+            if (! $address->is_primary) {
+                return;
+            }
+
+            $query = Address::query()->where('id', '!=', $address->id ?? 0);
+
+            if ($address->contact_id) {
+                $query->where('contact_id', $address->contact_id)->update(['is_primary' => false]);
+            } elseif ($address->organization_id) {
+                $query->where('organization_id', $address->organization_id)->update(['is_primary' => false]);
+            }
+        });
+    }
 }

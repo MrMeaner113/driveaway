@@ -4,13 +4,13 @@ namespace App\Filament\Resources\Contacts\Pages;
 
 use App\Filament\Resources\Contacts\ContactResource;
 use App\Filament\Resources\Contacts\Schemas\ContactForm;
-use App\Models\StaffPosition;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
-use Filament\Resources\Pages\EditRecord;
+use Filament\Resources\Pages\ViewRecord;
 
-class EditContact extends EditRecord
+class ViewContact extends ViewRecord
 {
     protected static string $resource = ContactResource::class;
 
@@ -25,22 +25,10 @@ class EditContact extends EditRecord
         return $data;
     }
 
-    protected function afterSave(): void
-    {
-        $isDriver = StaffPosition::find($this->record->staff_position_id)?->name === 'Driver';
-        $driverData = array_intersect_key(
-            $this->data,
-            array_flip(ContactForm::driverFields())
-        );
-
-        if ($isDriver && array_filter($driverData)) {
-            $this->record->driverProfile()->updateOrCreate([], $driverData);
-        }
-    }
-
     protected function getHeaderActions(): array
     {
         return [
+            EditAction::make(),
             DeleteAction::make(),
             ForceDeleteAction::make(),
             RestoreAction::make(),

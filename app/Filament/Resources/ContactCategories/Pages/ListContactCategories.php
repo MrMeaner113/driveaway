@@ -1,0 +1,17 @@
+<?php
+
+namespace App\Filament\Resources\ContactCategories\Pages;
+
+use App\Filament\Resources\ContactCategories\ContactCategoryResource;
+use Filament\Actions\CreateAction;
+use Filament\Resources\Pages\ListRecords;
+
+class ListContactCategories extends ListRecords
+{
+    protected static string $resource = ContactCategoryResource::class;
+
+    protected function getHeaderActions(): array
+    {
+        return [CreateAction::make()];
+    }
+}

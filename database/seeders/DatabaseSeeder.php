@@ -14,6 +14,8 @@ class DatabaseSeeder extends Seeder
             InsuranceRateSeeder::class,
             TravelModeSeeder::class,
             DiscountReasonSeeder::class,
+            StaffPositionSeeder::class,
+            DriverStatusSeeder::class,
         ]);
     }
 }

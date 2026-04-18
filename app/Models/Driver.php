@@ -52,6 +52,8 @@ class Driver extends Model
     use SoftDeletes;
 
     protected $fillable = [
+        'contact_id',
+        'driver_status_id',
         'user_id',
         'license_number',
         'license_class',
@@ -85,5 +87,15 @@ class Driver extends Model
     public function issuingJurisdiction(): BelongsTo
     {
         return $this->belongsTo(Province::class, 'issuing_jurisdiction_id');
+    }
+
+    public function contact(): BelongsTo
+    {
+        return $this->belongsTo(Contact::class);
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(DriverStatus::class, 'driver_status_id');
     }
 }
