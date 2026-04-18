@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\QuoteRequests\Pages;
 
 use App\Filament\Resources\QuoteRequests\QuoteRequestResource;
+use App\Filament\Resources\QuoteRequests\Schemas\QuoteRequestInfolist;
 use App\Filament\Resources\TripPlans\TripPlanResource;
 use App\Models\City;
 use App\Models\Province;
-use App\Models\TripPlan;
+use App\Models\QuoteRequestVehicle;
 use App\Models\VehicleMake;
 use App\Models\VehicleModel;
 use App\Services\QuotePromotionService;
@@ -25,40 +26,6 @@ class ViewQuoteRequest extends ViewRecord
 {
     protected static string $resource = QuoteRequestResource::class;
 
-    // ── Status helpers ───────────────────────────────────────────────────────
-
-    private static function statusColor(string $status): string
-    {
-        return match ($status) {
-            'new'         => 'warning',
-            'in_progress' => 'info',
-            'on_hold'     => 'gray',
-            'sent'        => 'primary',
-            'accepted'    => 'success',
-            'rejected'    => 'danger',
-            'cancelled'   => 'danger',
-            'expired'     => 'gray',
-            'converted'   => 'success',
-            default       => 'gray',
-        };
-    }
-
-    private static function statusLabel(string $status): string
-    {
-        return match ($status) {
-            'new'         => 'New',
-            'in_progress' => 'In Progress',
-            'on_hold'     => 'On Hold',
-            'sent'        => 'Sent',
-            'accepted'    => 'Accepted',
-            'rejected'    => 'Rejected',
-            'cancelled'   => 'Cancelled',
-            'expired'     => 'Expired',
-            'converted'   => 'Converted',
-            default       => ucfirst(str_replace('_', ' ', $status)),
-        };
-    }
-
     // ── Infolist ─────────────────────────────────────────────────────────────
 
     public function infolist(Schema $schema): Schema
@@ -66,7 +33,7 @@ class ViewQuoteRequest extends ViewRecord
         return $schema->components([
 
             TextEntry::make('quote_header')
-                ->Label('')
+                ->hiddenLabel()
                 ->html()
                 ->columnSpanFull()
                 ->dehydrated(false)
@@ -93,7 +60,6 @@ class ViewQuoteRequest extends ViewRecord
                     return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Contact Information'])->render();
                 }),
 
-            // Section 2: Vehicle Information
             TextEntry::make('vehicles_info')
                 ->hiddenLabel()
                 ->html()
@@ -115,7 +81,6 @@ class ViewQuoteRequest extends ViewRecord
                     return $html;
                 }),
 
-            // Section 3: Origin
             TextEntry::make('origin_info')
                 ->hiddenLabel()
                 ->html()
@@ -130,7 +95,6 @@ class ViewQuoteRequest extends ViewRecord
                     return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Origin'])->render();
                 }),
 
-            // Section 4: Destination
             TextEntry::make('destination_info')
                 ->hiddenLabel()
                 ->html()
@@ -145,7 +109,6 @@ class ViewQuoteRequest extends ViewRecord
                     return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Destination'])->render();
                 }),
 
-            // Section 5: Add-on Services
             TextEntry::make('addons_info')
                 ->hiddenLabel()
                 ->html()
@@ -159,7 +122,6 @@ class ViewQuoteRequest extends ViewRecord
                     return view('filament.infolist.table-rows', ['rows' => $rows, 'heading' => 'Add-on Services'])->render();
                 }),
 
-            // Section 6: Notes (only if not empty)
             TextEntry::make('notes_info')
                 ->hiddenLabel()
                 ->html()
@@ -175,7 +137,6 @@ class ViewQuoteRequest extends ViewRecord
                     ])->render();
                 }),
 
-            // Section 7: Workflow
             TextEntry::make('workflow_info')
                 ->hiddenLabel()
                 ->html()
@@ -218,7 +179,7 @@ class ViewQuoteRequest extends ViewRecord
             ])
                 ->label('Change Status')
                 ->icon('heroicon-o-arrow-path')
-                ->color(fn(): string => static::statusColor($this->record?->status ?? 'new'))
+                ->color(fn(): string => QuoteRequestInfolist::statusColor($this->record?->status ?? 'new'))
                 ->button()
                 ->visible(fn(): bool => $this->record && ! $this->record->isTerminal()),
 
@@ -368,15 +329,15 @@ class ViewQuoteRequest extends ViewRecord
      */
     private function changeStatusAction(string $status): Action
     {
-        $label = static::statusLabel($status);
-        $color = static::statusColor($status);
+        $label = QuoteRequestInfolist::statusLabel($status);
+        $color = QuoteRequestInfolist::statusColor($status);
 
         return Action::make("setStatus_{$status}")
             ->label($label)
             ->color($color)
             ->requiresConfirmation()
             ->modalHeading("Set status to \"{$label}\"")
-            ->modalDescription(fn() => "Current status: " . static::statusLabel($this->record->status))
+            ->modalDescription(fn() => "Current status: " . QuoteRequestInfolist::statusLabel($this->record->status))
             ->visible(fn() => $this->record && $this->record->status !== $status)
             ->action(function () use ($status) {
                 $payload = ['status' => $status];
@@ -396,7 +357,7 @@ class ViewQuoteRequest extends ViewRecord
 
                 Notification::make()
                     ->success()
-                    ->title('Status updated to ' . static::statusLabel($status) . '.')
+                    ->title('Status updated to ' . QuoteRequestInfolist::statusLabel($status) . '.')
                     ->send();
 
                 $this->redirect(QuoteRequestResource::getUrl('view', ['record' => $this->record]));
@@ -449,7 +410,7 @@ class ViewQuoteRequest extends ViewRecord
      */
     private function reasonStatusAction(string $status): Action
     {
-        $label = static::statusLabel($status);
+        $label = QuoteRequestInfolist::statusLabel($status);
 
         return Action::make("setStatus_{$status}")
             ->label($label)
@@ -507,7 +468,7 @@ class ViewQuoteRequest extends ViewRecord
                     ])
                     ->action(function (array $data) use ($vid) {
                         $make = VehicleMake::create(['name' => $data['name'], 'is_active' => true]);
-                        \App\Models\QuoteRequestVehicle::where('id', $vid)->update([
+                        QuoteRequestVehicle::where('id', $vid)->update([
                             'vehicle_make_id'     => $make->id,
                             'vehicle_make_custom' => null,
                         ]);
@@ -528,7 +489,7 @@ class ViewQuoteRequest extends ViewRecord
                             ->required(),
                     ])
                     ->action(function (array $data) use ($vid) {
-                        \App\Models\QuoteRequestVehicle::where('id', $vid)->update([
+                        QuoteRequestVehicle::where('id', $vid)->update([
                             'vehicle_make_id'     => $data['make_id'],
                             'vehicle_make_custom' => null,
                         ]);
@@ -563,7 +524,7 @@ class ViewQuoteRequest extends ViewRecord
                             'vehicle_make_id' => $data['vehicle_make_id'],
                             'is_active'       => true,
                         ]);
-                        \App\Models\QuoteRequestVehicle::where('id', $vid)->update([
+                        QuoteRequestVehicle::where('id', $vid)->update([
                             'vehicle_model_id'     => $model->id,
                             'vehicle_model_custom' => null,
                         ]);
@@ -584,7 +545,7 @@ class ViewQuoteRequest extends ViewRecord
                             ->required(),
                     ])
                     ->action(function (array $data) use ($vid) {
-                        \App\Models\QuoteRequestVehicle::where('id', $vid)->update([
+                        QuoteRequestVehicle::where('id', $vid)->update([
                             'vehicle_model_id'     => $data['model_id'],
                             'vehicle_model_custom' => null,
                         ]);
